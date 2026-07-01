@@ -1,6 +1,6 @@
-# Wavform 🎵
+# music player
 
-**Open-source lossless audio platform.** Upload FLAC, WAV, DSD. Stream bitperfect. EQ in the browser. Route to your external DAC.
+**Open-source lossless audio platform.** Upload FLAC, WAV, DSD. Stream bitperfect. EQ in the browser. Route to your external DAC. Potentially mobile app, made for myself becuz I wanted to play stuff that was unreleased on youtube. All vibe coded. 
 
 ---
 
