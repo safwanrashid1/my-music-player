@@ -1,0 +1,339 @@
+/* ── Winamp 2.x Classic skin system ───────────────────────────────────────── */
+:root {
+  /* Chrome — the "body" of the player */
+  --chrome:      #B4BCC8;
+  --chrome-hi:   #D8E0E8;   /* top / left face (light source hits here) */
+  --chrome-lo:   #6C7480;   /* bottom / right face (shadow) */
+  --chrome-dark: #8890A0;   /* recessed panel interior */
+  --chrome-edge: #40484C;   /* hard outer border */
+
+  /* LCD / display areas ─ deep navy + bright teal */
+  --lcd:         #001828;
+  --lcd-text:    #00DCDC;
+  --lcd-dim:     #00606A;   /* "off" segment / inactive text */
+  --lcd-green:   #00CC44;   /* ● NOW PLAYING indicator */
+  --led-red:     #FF2828;
+  --led-amber:   #E09600;
+
+  /* Playlist / content area */
+  --playlist-bg:     #001828;
+  --playlist-hover:  #003C78;
+  --playlist-active: #0050A8;
+  --playlist-text:   #D0E0EC;
+  --playlist-dim:    #4878A0;
+  --playlist-dur:    #60A0C0;
+
+  /* Text on chrome surfaces */
+  --text:  #000010;
+  --text2: #303840;
+  --text3: #606870;
+
+  /* Legacy compat tokens used throughout components */
+  --bg:      var(--chrome);
+  --bg2:     var(--chrome-dark);
+  --bg3:     #78808C;
+  --surface: #9098A8;
+  --accent:  #00C8C8;
+  --accent2: #009090;
+  --amber:   #D09000;
+  --red:     #CC2828;
+  --border:  rgba(0,8,16,0.25);
+  --border2: rgba(0,8,16,0.5);
+
+  /* Fonts — VT323 is the pixel bitmap label font; JetBrains Mono for data */
+  --pixel: 'VT323', 'Courier New', monospace;
+  --mono:  'JetBrains Mono', 'Courier New', monospace;
+  --sans:  'VT323', 'Courier New', monospace;
+
+  /* No border-radius — Winamp is all sharp corners */
+  --r:  0px;
+  --r2: 0px;
+
+  --player-h: 80px;
+}
+
+/* ── Reset ─────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--chrome);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.4;
+  height: 100%;
+  overflow: hidden;
+  image-rendering: pixelated;
+}
+
+#app {
+  display: grid;
+  grid-template-rows: 48px 1fr var(--player-h);
+  grid-template-columns: 220px 1fr;
+  grid-template-areas:
+    "nav nav"
+    "sidebar main"
+    "player player";
+  height: 100vh;
+}
+
+/* ── Winamp bevel mixins (applied via box-shadow) ──────────────────────────── */
+/* Use on elements that need the raised-chrome look */
+.win-raised {
+  background: var(--chrome);
+  box-shadow:
+    inset 1px 1px 0 var(--chrome-hi),
+    inset -1px -1px 0 var(--chrome-lo);
+}
+/* Recessed well — display areas, text inputs */
+.win-sunken {
+  background: var(--chrome-dark);
+  box-shadow:
+    inset 1px 1px 0 var(--chrome-lo),
+    inset -1px -1px 0 var(--chrome-hi);
+}
+/* LCD display panel */
+.win-lcd {
+  background: var(--lcd);
+  color: var(--lcd-text);
+  font-family: var(--pixel);
+  box-shadow:
+    inset 1px 1px 0 #000,
+    inset -1px -1px 0 #203040;
+}
+
+/* ── Scrollbars ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--chrome-dark); box-shadow: inset 1px 1px 0 var(--chrome-lo), inset -1px -1px 0 var(--chrome-hi); }
+::-webkit-scrollbar-thumb { background: var(--chrome); box-shadow: inset 1px 1px 0 var(--chrome-hi), inset -1px -1px 0 var(--chrome-lo); }
+
+/* ── Typography ─────────────────────────────────────────────────────────────── */
+h1 { font-size: 22px; font-weight: 400; font-family: var(--pixel); letter-spacing: 1px; }
+h2 { font-size: 18px; font-weight: 400; font-family: var(--pixel); letter-spacing: 1px; }
+h3 { font-size: 15px; font-weight: 400; font-family: var(--pixel); letter-spacing: 1px; }
+
+/* ── Buttons ─────────────────────────────────────────────────────────────────── */
+button {
+  font-family: var(--sans);
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px;
+  font-family: var(--pixel);
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  background: var(--chrome);
+  color: var(--text);
+  border: none;
+  box-shadow:
+    inset 1px 1px 0 var(--chrome-hi),
+    inset -1px -1px 0 var(--chrome-lo),
+    0 0 0 1px var(--chrome-edge);
+}
+.btn:hover { background: var(--chrome-hi); }
+.btn:active, .btn.active {
+  box-shadow:
+    inset 1px 1px 0 var(--chrome-lo),
+    inset -1px -1px 0 var(--chrome-hi),
+    0 0 0 1px var(--chrome-edge);
+}
+.btn-primary {
+  background: var(--lcd);
+  color: var(--lcd-text);
+  box-shadow:
+    inset 1px 1px 0 #002840,
+    inset -1px -1px 0 #000810,
+    0 0 0 1px var(--chrome-edge);
+}
+.btn-primary:hover { background: var(--playlist-hover); color: #FFFFFF; }
+.btn-ghost {
+  background: transparent;
+  box-shadow:
+    inset 1px 1px 0 var(--chrome-hi),
+    inset -1px -1px 0 var(--chrome-lo),
+    0 0 0 1px var(--chrome-lo);
+}
+.btn-danger { color: var(--red); }
+.btn-sm { padding: 2px 8px; font-size: 13px; }
+.btn-icon { padding: 4px; }
+.w-full { width: 100%; justify-content: center; }
+
+/* ── Inputs ─────────────────────────────────────────────────────────────────── */
+input, textarea, select {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: var(--lcd);
+  color: var(--lcd-text);
+  border: none;
+  padding: 4px 8px;
+  outline: none;
+  width: 100%;
+  box-shadow:
+    inset 1px 1px 0 #000,
+    inset -1px -1px 0 #203040,
+    0 0 0 1px var(--chrome-edge);
+  caret-color: var(--lcd-text);
+}
+input::placeholder, textarea::placeholder { color: var(--lcd-dim); }
+input:focus { box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #203040, 0 0 0 1px var(--accent); }
+select option { background: var(--lcd); color: var(--lcd-text); }
+
+/* ── Range sliders ───────────────────────────────────────────────────────────── */
+input[type=range] {
+  background: transparent; border: none; padding: 0;
+  cursor: pointer; -webkit-appearance: none; height: 6px;
+  box-shadow: none;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  background: var(--chrome-dark);
+  height: 4px;
+  box-shadow: inset 1px 1px 0 var(--chrome-lo), inset -1px -1px 0 var(--chrome-hi);
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px; height: 18px;
+  background: var(--chrome);
+  margin-top: -7px;
+  cursor: pointer;
+  box-shadow: inset 1px 1px 0 var(--chrome-hi), inset -1px -1px 0 var(--chrome-lo), 0 0 0 1px var(--chrome-edge);
+}
+input[type=range].vertical {
+  writing-mode: vertical-lr; direction: rtl;
+  height: 72px; width: 8px;
+}
+input[type=range].vertical::-webkit-slider-runnable-track { width: 4px; }
+input[type=range].vertical::-webkit-slider-thumb { margin-top: 0; margin-left: -3px; }
+
+/* ── Badges ──────────────────────────────────────────────────────────────────── */
+.badge {
+  font-family: var(--pixel);
+  font-size: 11px;
+  padding: 1px 5px;
+  background: var(--lcd);
+  color: var(--lcd-text);
+  box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #203040;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+.badge-amber { color: var(--led-amber); }
+.badge-red   { color: var(--led-red); }
+
+/* ── Spinner ─────────────────────────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 14px; height: 14px;
+  border: 2px solid var(--chrome-lo);
+  border-top-color: var(--lcd-text);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+/* ── Toast ───────────────────────────────────────────────────────────────────── */
+#toast {
+  position: fixed; bottom: calc(var(--player-h) + 8px); left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--lcd);
+  color: var(--lcd-text);
+  padding: 6px 16px;
+  font-family: var(--pixel);
+  font-size: 15px;
+  letter-spacing: 1px;
+  opacity: 0; pointer-events: none;
+  transition: all 0.15s; z-index: 999; white-space: nowrap;
+  box-shadow: inset 1px 1px 0 #002840, inset -1px -1px 0 #000810, 0 0 0 1px var(--chrome-edge);
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#toast.error { color: var(--led-red); }
+#toast.success { color: var(--lcd-green); }
+
+/* ── Modal ───────────────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,12,24,0.75);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100;
+}
+.modal {
+  background: var(--chrome);
+  box-shadow:
+    inset 1px 1px 0 var(--chrome-hi),
+    inset -1px -1px 0 var(--chrome-lo),
+    0 0 0 2px var(--chrome-edge),
+    4px 4px 0 rgba(0,0,0,0.4);
+  padding: 2px;
+  min-width: 320px; max-width: 95vw;
+}
+.modal-titlebar {
+  background: linear-gradient(90deg, var(--playlist-active) 0%, var(--lcd) 100%);
+  color: #fff;
+  font-family: var(--pixel);
+  font-size: 13px;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px;
+}
+.modal-body { padding: 10px 12px; }
+
+/* ── Form groups ──────────────────────────────────────────────────────────────── */
+.form-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.form-group label { font-size: 13px; color: var(--text2); font-family: var(--pixel); letter-spacing: 0.5px; text-transform: uppercase; }
+.form-row { display: flex; gap: 8px; }
+.form-row .form-group { flex: 1; }
+
+/* ── Divider ──────────────────────────────────────────────────────────────────── */
+.divider {
+  height: 0;
+  border: none;
+  border-top: 1px solid var(--chrome-lo);
+  border-bottom: 1px solid var(--chrome-hi);
+  margin: 8px 0;
+}
+
+/* ── Utilities ────────────────────────────────────────────────────────────────── */
+.flex           { display: flex; }
+.flex-col       { display: flex; flex-direction: column; }
+.items-center   { align-items: center; }
+.justify-between{ justify-content: space-between; }
+.gap-6  { gap: 6px; }
+.gap-8  { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+.text-accent { color: var(--accent); }
+.text-muted  { color: var(--text2); }
+.text-dim    { color: var(--text3); }
+.text-red    { color: var(--red); }
+.truncate    { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pointer     { cursor: pointer; }
+.hidden      { display: none !important; }
+.mono        { font-family: var(--mono); }
+
+/* ── Responsive (mobile sidebar off-canvas) ──────────────────────────────────── */
+#sidebar-backdrop { display: none; }
+@media (max-width: 860px) {
+  .nav-menu-btn { display: inline-flex; align-items: center; justify-content: center; }
+  #app { grid-template-columns: 1fr; grid-template-areas: "nav" "main" "player"; }
+  #sidebar {
+    position: fixed; top: 48px; bottom: var(--player-h); left: 0;
+    width: 220px; transform: translateX(-100%);
+    transition: transform 0.15s; z-index: 80;
+  }
+  #sidebar.open { transform: translateX(0); }
+  #sidebar-backdrop {
+    display: block; position: fixed; top: 48px; bottom: var(--player-h);
+    left: 0; right: 0; background: rgba(0,0,0,0.5); z-index: 70;
+    opacity: 0; pointer-events: none; transition: opacity 0.15s;
+  }
+  #sidebar-backdrop.open { opacity: 1; pointer-events: auto; }
+  .player-info { width: auto; max-width: 110px; }
+  .player-badges, .vol-wrap, #normalize-toggle-btn { display: none; }
+}
