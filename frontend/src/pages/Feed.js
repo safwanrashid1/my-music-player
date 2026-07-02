@@ -92,7 +92,7 @@ export function renderFeed(container) {
       .add-btn { cursor: pointer; }
       .add-btn:hover { color: var(--lcd-text); }
 
-      .load-more { padding: 8px; text-align: center; flex-shrink: 0; }
+      .load-more { padding: 4px 8px; text-align: center; flex-shrink: 0; background: var(--playlist-bg); }
       .empty-state {
         flex: 1; display: flex; flex-direction: column;
         align-items: center; justify-content: center;
@@ -102,22 +102,61 @@ export function renderFeed(container) {
         font-size: 40px; margin-bottom: 12px; opacity: 0.4;
         font-family: var(--pixel); letter-spacing: 4px;
       }
+
+      /* ── Playlist Editor bottom action bar ── */
+      #playlist-statusbar {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 3px 6px; flex-shrink: 0;
+        background: var(--chrome);
+        box-shadow:
+          inset 0 1px 0 var(--chrome-hi),
+          0 0 0 1px var(--chrome-edge);
+        border-top: 1px solid var(--chrome-lo);
+      }
+      .pl-actions { display: flex; gap: 2px; }
+      .pl-action-btn {
+        font-family: var(--pixel); font-size: 11px; letter-spacing: 0.5px;
+        padding: 2px 8px; cursor: pointer;
+        background: var(--chrome); color: var(--text);
+        box-shadow: inset 1px 1px 0 var(--chrome-hi), inset -1px -1px 0 var(--chrome-lo), 0 0 0 1px var(--chrome-edge);
+      }
+      .pl-action-btn:hover { background: var(--chrome-hi); }
+      .pl-action-btn:active { box-shadow: inset 1px 1px 0 var(--chrome-lo), inset -1px -1px 0 var(--chrome-hi), 0 0 0 1px var(--chrome-edge); }
+      .pl-time {
+        font-family: var(--pixel); font-size: 12px; letter-spacing: 1px;
+        color: var(--lcd-text);
+        background: var(--lcd);
+        padding: 1px 8px;
+        box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #203040;
+      }
     </style>
     <div id="feed-wrap">
+      <!-- PLAYLIST EDITOR title bar -->
       <div class="feed-header">
-        <h2 id="feed-title">Playlist</h2>
+        <h2 id="feed-title">PLAYLIST EDITOR</h2>
         <div class="feed-filters">
-          <div class="filter-pill active" data-genre="">All</div>
-          <div class="filter-pill" data-genre="electronic">Electronic</div>
-          <div class="filter-pill" data-genre="jazz">Jazz</div>
-          <div class="filter-pill" data-genre="classical">Classical</div>
-          <div class="filter-pill" data-genre="ambient">Ambient</div>
-          <div class="filter-pill" data-genre="rock">Rock</div>
+          <div class="filter-pill active" data-genre="">ALL</div>
+          <div class="filter-pill" data-genre="electronic">ELECTRONIC</div>
+          <div class="filter-pill" data-genre="jazz">JAZZ</div>
+          <div class="filter-pill" data-genre="classical">CLASSICAL</div>
+          <div class="filter-pill" data-genre="ambient">AMBIENT</div>
+          <div class="filter-pill" data-genre="rock">ROCK</div>
         </div>
       </div>
       <div id="track-grid"></div>
       <div class="load-more" id="load-more" style="display:none">
-        <button class="btn btn-sm" id="load-more-btn">Load more…</button>
+        <button class="pl-action-btn" id="load-more-btn">LOAD MORE…</button>
+      </div>
+      <!-- Winamp-style bottom bar: ADD · REM · SEL · MISC + time readout -->
+      <div id="playlist-statusbar">
+        <div class="pl-actions">
+          <button class="pl-action-btn" id="pl-add" title="Upload a track">+ ADD</button>
+          <button class="pl-action-btn" id="pl-sel-all" title="Select all">SEL</button>
+          <button class="pl-action-btn" id="pl-albums" title="View Albums">ALBUMS</button>
+          <button class="pl-action-btn" id="pl-playlists" title="View Playlists">PLAYLISTS</button>
+          <button class="pl-action-btn" id="pl-manage" title="Manage Playlist">MANAGE PLAYLIST</button>
+        </div>
+        <div class="pl-time" id="pl-total-time">0:00:00</div>
       </div>
     </div>
   `;
@@ -140,11 +179,17 @@ export function renderFeed(container) {
   // Search subscription
   store.subscribe('feedQuery', (q) => {
     const title = container.querySelector('#feed-title');
-    if (title) title.textContent = q ? `Results for "${q}"` : 'Latest tracks';
+    if (title) title.textContent = q ? `RESULTS: "${q.toUpperCase()}"` : 'PLAYLIST EDITOR';
     page = 1; exhausted = false;
     grid.innerHTML = '';
     loadTracks(grid, container);
   });
+
+  // Bottom bar buttons
+  container.querySelector('#pl-add')?.addEventListener('click', () => store.set('page', 'upload'));
+  container.querySelector('#pl-albums')?.addEventListener('click', () => store.set('page', 'albums'));
+  container.querySelector('#pl-playlists')?.addEventListener('click', () => store.set('page', 'playlists'));
+  container.querySelector('#pl-manage')?.addEventListener('click', () => store.set('page', 'playlists'));
 
   // Load more
   container.querySelector('#load-more-btn')?.addEventListener('click', () => {
@@ -213,6 +258,7 @@ async function loadTracks(grid, container, append = false) {
       }
     }
     updatePlayingCard(grid);
+    updateTotalTime(container, grid);
   } catch (err) {
     if (!append) {
       grid.innerHTML = `<div class="empty-state"><p class="text-red" style="font-family:var(--pixel)">ERROR: ${err.message}</p></div>`;
@@ -275,6 +321,23 @@ function buildTrackCard(track) {
 }
 
 function drawMiniWaveform() { /* no-op — playlist view hides mini waveforms */ }
+
+function updateTotalTime(container, grid) {
+  const el = container.querySelector('#pl-total-time');
+  if (!el) return;
+  let total = 0;
+  grid.querySelectorAll('.track-card').forEach(card => {
+    const dur = card.querySelector('.track-stat:last-child');
+    if (dur) {
+      const [m, s] = (dur.textContent || '0:00').split(':').map(Number);
+      total += (m || 0) * 60 + (s || 0);
+    }
+  });
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = Math.floor(total % 60);
+  el.textContent = `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
 
 function updatePlayingCard(grid) {
   const current = store.get('currentTrack');

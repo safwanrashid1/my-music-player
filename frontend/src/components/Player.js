@@ -30,11 +30,23 @@ export function renderPlayer(container) {
         display: none; flex-direction: column; gap: 8px;
       }
       #eq-panel.open { display: flex; }
-      .eq-header { display: flex; align-items: center; justify-content: space-between; }
-      .eq-header-left { display: flex; align-items: center; gap: 8px; }
+      .eq-titlebar {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 2px 4px;
+        background: linear-gradient(90deg, var(--playlist-active) 0%, var(--lcd) 100%);
+        margin: -8px -16px 4px;
+      }
       .eq-title {
         font-family: var(--pixel); font-size: 13px;
-        color: var(--text3); letter-spacing: 2px; text-transform: uppercase;
+        color: #FFFFFF; letter-spacing: 3px; text-transform: uppercase;
+      }
+      #eq-on-btn, #eq-auto-btn {
+        font-size: 10px; letter-spacing: 1px; padding: 1px 5px;
+        background: var(--chrome-dark); color: var(--text3);
+      }
+      #eq-on-btn.active, #eq-auto-btn.active {
+        background: var(--lcd-green); color: #000;
+        box-shadow: inset 1px 1px 0 rgba(255,255,255,0.3), inset -1px -1px 0 rgba(0,0,0,0.3), 0 0 4px var(--lcd-green);
       }
       .eq-curve-wrap {
         height: 64px; position: relative;
@@ -181,13 +193,19 @@ export function renderPlayer(container) {
 
     <!-- EQ Panel -->
     <div id="eq-panel">
-      <div class="eq-header">
-        <div class="eq-header-left">
-          <span class="eq-title">Equalizer</span>
-          <button class="btn btn-sm" id="eq-reset">Reset</button>
-          <button class="btn btn-sm" id="eq-save">Save</button>
+      <!-- EQ title bar — like Winamp's EQUALIZER window header -->
+      <div class="eq-titlebar">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="eq-title">EQUALIZER</span>
+          <!-- ON / AUTO / PRESETS — the three classic Winamp EQ toggles -->
+          <button class="btn btn-sm" id="eq-on-btn" title="EQ on/off">ON</button>
+          <button class="btn btn-sm" id="eq-auto-btn" title="Auto-EQ">AUTO</button>
         </div>
-        <div class="eq-presets-row" id="eq-presets-row"></div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <button class="btn btn-sm" id="eq-reset">RESET</button>
+          <button class="btn btn-sm" id="eq-save">SAVE PRESET</button>
+          <div class="eq-presets-row" id="eq-presets-row"></div>
+        </div>
       </div>
       <div class="eq-curve-wrap">
         <canvas id="eq-curve"></canvas>
@@ -457,6 +475,9 @@ function setupEQ(player) {
   // EQ toggle panel
   const toggleBtn = player.querySelector('#eq-toggle-btn');
   const eqPanel = player.querySelector('#eq-panel');
+  const eqOnBtn = player.querySelector('#eq-on-btn');
+  const eqAutoBtn = player.querySelector('#eq-auto-btn');
+
   toggleBtn.addEventListener('click', () => {
     const open = eqPanel.classList.toggle('open');
     toggleBtn.classList.toggle('active', open);
@@ -470,6 +491,22 @@ function setupEQ(player) {
         loadEqPresets();
       }, 50);
     }
+  });
+
+  // ON button — mirrors the sidebar EQ enabled toggle
+  eqOnBtn?.addEventListener('click', () => {
+    store.set('eqEnabled', !store.get('eqEnabled'));
+  });
+  store.subscribe('eqEnabled', (enabled) => {
+    eqOnBtn?.classList.toggle('active', !!enabled);
+  });
+
+  // AUTO button — visual toggle only (linked to normalization)
+  eqAutoBtn?.addEventListener('click', () => {
+    store.set('normalizeEnabled', !store.get('normalizeEnabled'));
+  });
+  store.subscribe('normalizeEnabled', (enabled) => {
+    eqAutoBtn?.classList.toggle('active', !!enabled);
   });
 
   store.subscribe('showEq', (open) => {
