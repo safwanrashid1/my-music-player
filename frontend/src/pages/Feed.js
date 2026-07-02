@@ -131,9 +131,9 @@ export function renderFeed(container) {
       }
     </style>
     <div id="feed-wrap">
-      <!-- PLAYLIST EDITOR title bar -->
+      <!-- ALL SONGS title bar -->
       <div class="feed-header">
-        <h2 id="feed-title">PLAYLIST EDITOR</h2>
+        <h2 id="feed-title">ALL SONGS</h2>
         <div class="feed-filters">
           <div class="filter-pill active" data-genre="">ALL</div>
           <div class="filter-pill" data-genre="electronic">ELECTRONIC</div>
@@ -179,7 +179,7 @@ export function renderFeed(container) {
   // Search subscription
   store.subscribe('feedQuery', (q) => {
     const title = container.querySelector('#feed-title');
-    if (title) title.textContent = q ? `RESULTS: "${q.toUpperCase()}"` : 'PLAYLIST EDITOR';
+    if (title) title.textContent = q ? `SEARCH: "${q.toUpperCase()}"` : 'ALL SONGS';
     page = 1; exhausted = false;
     grid.innerHTML = '';
     loadTracks(grid, container);

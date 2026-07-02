@@ -64,13 +64,14 @@ export function renderSidebar(container) {
     </style>
     <div class="sidebar-section">
       <div class="sidebar-label">Discover</div>
-      <div class="sidebar-item" data-page="feed"><span class="icon">⊞</span> Feed</div>
-      <div class="sidebar-item" data-page="trending"><span class="icon">↑</span> Trending</div>
+      <div class="sidebar-item" data-page="recents"><span class="icon">◷</span> Recents</div>
+      <div class="sidebar-item" data-page="songs"><span class="icon">♪</span> Songs</div>
+      <div class="sidebar-item" data-page="albums"><span class="icon">◈</span> Albums</div>
+      <div class="sidebar-item" data-page="statistics"><span class="icon">◉</span> Statistics</div>
     </div>
     <div class="sidebar-section">
       <div class="sidebar-label">Library</div>
       <div class="sidebar-item" data-page="upload" id="sb-upload"><span class="icon">↑</span> Upload</div>
-      <div class="sidebar-item" data-page="albums"><span class="icon">◈</span> Albums</div>
       <div class="sidebar-item" data-page="playlists"><span class="icon">♫</span> Playlists</div>
     </div>
     <div class="sidebar-divider"></div>

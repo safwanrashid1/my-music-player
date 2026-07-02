@@ -1,6 +1,7 @@
 import { store } from '../stores/app.js';
 import { engine, DEFAULT_BANDS } from '../audio/engine.js';
 import { api } from '../api/client.js';
+import { logPlay } from '../playlog.js';
 
 let waveformCanvas, waveformCtx, progressEl;
 let eqCanvas, eqCtx;
@@ -300,6 +301,7 @@ export async function playTrack(track) {
 
   updatePlayerInfo(track);
 
+  logPlay(track);
   const streamUrl = api.streamUrl(track.id);
   await engine.loadTrack(track.id, streamUrl, { lufsIntegrated: track.lufs_integrated });
   await engine.play();

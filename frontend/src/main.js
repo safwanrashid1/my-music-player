@@ -9,6 +9,8 @@ import { renderUpload } from './pages/Upload.js';
 import { renderAlbums } from './pages/Albums.js';
 import { renderPlaylists } from './pages/Playlists.js';
 import { renderCollectionDetail } from './pages/CollectionDetail.js';
+import { renderRecents } from './pages/Recents.js';
+import { renderStatistics } from './pages/Statistics.js';
 import { setupKeyboardShortcuts } from './keyboard.js';
 
 const app = document.getElementById('app');
@@ -39,9 +41,15 @@ renderDropOverlay(document.body);
 function navigate(page) {
   main.innerHTML = '';
   switch (page) {
+    case 'songs':
     case 'feed':
-    case 'trending':
       renderFeed(main);
+      break;
+    case 'recents':
+      renderRecents(main);
+      break;
+    case 'statistics':
+      renderStatistics(main);
       break;
     case 'upload':
       renderUpload(main);
@@ -64,4 +72,4 @@ store.subscribe('page', navigate);
 
 setupKeyboardShortcuts();
 
-store.set('page', 'feed');
+store.set('page', 'songs');
