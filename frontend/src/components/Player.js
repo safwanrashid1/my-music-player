@@ -149,17 +149,20 @@ export function renderPlayer(container) {
       .time-row {
         display: flex; justify-content: space-between;
         font-family: var(--pixel); font-size: 14px;
-        color: var(--lcd-text); letter-spacing: 1px;
-        padding: 1px 6px;
+        color: var(--lcd-text); letter-spacing: 2px;
+        padding: 2px 8px;
         background: var(--lcd);
         box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #203040, 0 0 0 1px var(--chrome-edge);
-        flex-shrink: 0; height: 18px;
+        flex-shrink: 0; height: 20px;
       }
       #time-current { color: var(--lcd-text); }
       #time-duration { color: var(--lcd-dim); }
+      /* SoundCloud-style waveform — tall, prominent, symmetric bars */
       #waveform-canvas {
         width: 100%; cursor: pointer; display: block;
-        height: 22px; flex-shrink: 0;
+        flex: 1; min-height: 44px;
+        background: var(--lcd);
+        box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #203040;
       }
 
       /* Right controls */
@@ -190,7 +193,176 @@ export function renderPlayer(container) {
       /* idle state */
       #player-bar.idle #player-lcd { opacity: 0.45; }
       #player-bar.idle .player-waveform-wrap { opacity: 0.3; }
+
+      /* ── DJ Console Panel ── */
+      #dj-panel {
+        position: absolute; bottom: var(--player-h); left: 0; right: 0;
+        background: var(--chrome);
+        box-shadow: inset 0 1px 0 var(--chrome-hi), 0 0 0 1px var(--chrome-edge);
+        display: none; flex-direction: column;
+      }
+      #dj-panel.open { display: flex; }
+      .dj-titlebar {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 3px 8px;
+        background: linear-gradient(90deg, #800040 0%, #400020 100%);
+        flex-shrink: 0;
+      }
+      .dj-titlebar-title { font-family: var(--pixel); font-size: 13px; color: #FF80B0; letter-spacing: 3px; }
+      .dj-stem-pills { display: flex; gap: 3px; }
+      .dj-stem-pill {
+        font-family: var(--pixel); font-size: 11px; padding: 2px 7px; cursor: pointer;
+        background: rgba(255,100,150,0.15); color: #FF80B0; letter-spacing: 1px;
+        box-shadow: inset 1px 1px 0 rgba(255,150,180,0.2), inset -1px -1px 0 rgba(0,0,0,0.4), 0 0 0 1px #400020;
+      }
+      .dj-stem-pill:hover { background: rgba(255,100,150,0.35); }
+
+      .dj-body {
+        display: flex; gap: 0; padding: 8px 10px; overflow-x: auto;
+      }
+      .dj-section {
+        padding: 0 10px; flex-shrink: 0;
+        border-right: 1px solid var(--chrome-lo);
+      }
+      .dj-section:first-child { padding-left: 0; }
+      .dj-section:last-child  { border-right: none; }
+      .dj-section-title {
+        font-family: var(--pixel); font-size: 10px; letter-spacing: 2px;
+        color: var(--text3); text-transform: uppercase; margin-bottom: 5px;
+      }
+
+      /* Filter sliders */
+      .dj-filter-row { display: flex; gap: 8px; }
+      .dj-fader {
+        display: flex; flex-direction: column; align-items: center; gap: 3px;
+      }
+      .dj-fader-label { font-family: var(--pixel); font-size: 10px; color: #FF80B0; letter-spacing: 1px; }
+      .dj-fader input[type=range] { height: 60px; width: 8px; }
+      .dj-fader-val { font-family: var(--mono); font-size: 9px; color: var(--lcd-dim); }
+
+      /* Kill buttons */
+      .dj-kills { display: flex; gap: 4px; }
+      .dj-kill-btn {
+        font-family: var(--pixel); font-size: 14px; letter-spacing: 1px;
+        padding: 4px 10px; cursor: pointer;
+        background: var(--chrome-dark); color: var(--text2);
+        box-shadow: inset 1px 1px 0 var(--chrome-hi), inset -1px -1px 0 var(--chrome-lo), 0 0 0 1px var(--chrome-edge);
+      }
+      .dj-kill-btn:hover { background: var(--chrome-hi); }
+      .dj-kill-btn.killed {
+        background: var(--led-red); color: #fff;
+        box-shadow: inset 1px 1px 0 rgba(255,120,120,0.5), inset -1px -1px 0 rgba(0,0,0,0.5), 0 0 8px var(--led-red), 0 0 0 1px var(--chrome-edge);
+      }
+
+      /* Loop */
+      .dj-loop-display {
+        font-family: var(--mono); font-size: 11px; color: var(--lcd-text);
+        background: var(--lcd); padding: 3px 8px; margin-bottom: 5px;
+        box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #203040;
+        white-space: nowrap; min-width: 140px;
+      }
+      .dj-loop-btns { display: flex; gap: 3px; }
+      .dj-btn {
+        font-family: var(--pixel); font-size: 12px; padding: 3px 8px; cursor: pointer;
+        background: var(--chrome); color: var(--text);
+        box-shadow: inset 1px 1px 0 var(--chrome-hi), inset -1px -1px 0 var(--chrome-lo), 0 0 0 1px var(--chrome-edge);
+        letter-spacing: 0.5px;
+      }
+      .dj-btn:hover { background: var(--chrome-hi); }
+      .dj-btn:active, .dj-btn.active {
+        background: var(--lcd); color: var(--lcd-text);
+        box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #203040, 0 0 0 1px var(--chrome-edge);
+      }
+
+      /* Hot cue pads */
+      .dj-cues { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+      .dj-cue-pad {
+        font-family: var(--pixel); font-size: 11px; line-height: 1.3;
+        padding: 5px 8px; cursor: pointer; text-align: center;
+        background: var(--chrome-dark); color: var(--text3);
+        box-shadow: inset 1px 1px 0 var(--chrome-hi), inset -1px -1px 0 var(--chrome-lo), 0 0 0 1px var(--chrome-edge);
+        min-width: 56px;
+      }
+      .dj-cue-pad:hover { background: var(--chrome); }
+      .dj-cue-pad.set { background: #003050; color: var(--lcd-text); box-shadow: inset 1px 1px 0 #002840, inset -1px -1px 0 #000810, 0 0 4px var(--accent), 0 0 0 1px var(--chrome-edge); }
+      .dj-cue-pad:active { box-shadow: inset 1px 1px 0 var(--chrome-lo), inset -1px -1px 0 var(--chrome-hi), 0 0 0 1px var(--chrome-edge); }
+      .cue-num { color: #FF80B0; font-size: 10px; }
     </style>
+
+    <!-- DJ Console Panel -->
+    <div id="dj-panel">
+      <div class="dj-titlebar">
+        <span class="dj-titlebar-title">DJ CONSOLE</span>
+        <div class="dj-stem-pills">
+          <button class="dj-stem-pill" data-stem="bass">BASS</button>
+          <button class="dj-stem-pill" data-stem="vocal">VOCAL</button>
+          <button class="dj-stem-pill" data-stem="tops">TOPS</button>
+          <button class="dj-stem-pill" data-stem="full">FULL</button>
+        </div>
+      </div>
+      <div class="dj-body">
+
+        <!-- FILTERS -->
+        <div class="dj-section">
+          <div class="dj-section-title">Filters</div>
+          <div class="dj-filter-row">
+            <div class="dj-fader">
+              <div class="dj-fader-label">HP</div>
+              <input type="range" class="vertical" id="dj-hp" min="20" max="2000" value="20" title="High-pass: sweep bass out" />
+              <div class="dj-fader-val" id="dj-hp-val">20Hz</div>
+            </div>
+            <div class="dj-fader">
+              <div class="dj-fader-label">LP</div>
+              <input type="range" class="vertical" id="dj-lp" min="500" max="20000" value="20000" title="Low-pass: sweep highs out" />
+              <div class="dj-fader-val" id="dj-lp-val">20k</div>
+            </div>
+            <div class="dj-fader">
+              <div class="dj-fader-label">REV</div>
+              <input type="range" class="vertical" id="dj-rev" min="0" max="100" value="0" title="Reverb send" />
+              <div class="dj-fader-val" id="dj-rev-val">0%</div>
+            </div>
+            <div class="dj-fader">
+              <div class="dj-fader-label">DLY</div>
+              <input type="range" class="vertical" id="dj-dly" min="0" max="100" value="0" title="Delay send" />
+              <div class="dj-fader-val" id="dj-dly-val">0%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EQ KILLS -->
+        <div class="dj-section">
+          <div class="dj-section-title">EQ Kill</div>
+          <div class="dj-kills">
+            <button class="dj-kill-btn" id="dj-kill-bass" title="Silence bass frequencies">LO</button>
+            <button class="dj-kill-btn" id="dj-kill-mid" title="Silence mids">MID</button>
+            <button class="dj-kill-btn" id="dj-kill-high" title="Silence highs">HI</button>
+          </div>
+        </div>
+
+        <!-- LOOP -->
+        <div class="dj-section">
+          <div class="dj-section-title">Loop</div>
+          <div class="dj-loop-display" id="dj-loop-display">— SET IN + OUT —</div>
+          <div class="dj-loop-btns">
+            <button class="dj-btn" id="dj-loop-in" title="Set loop start">IN</button>
+            <button class="dj-btn" id="dj-loop-out" title="Set loop end">OUT</button>
+            <button class="dj-btn" id="dj-loop-toggle" title="Toggle loop">LOOP</button>
+          </div>
+        </div>
+
+        <!-- HOT CUES -->
+        <div class="dj-section">
+          <div class="dj-section-title">Hot Cues <span style="font-size:9px;color:var(--text3)">(click=set/jump · right-click=clear)</span></div>
+          <div class="dj-cues">
+            <button class="dj-cue-pad" id="dj-cue-0"><div class="cue-num">1</div><div class="cue-time">—</div></button>
+            <button class="dj-cue-pad" id="dj-cue-1"><div class="cue-num">2</div><div class="cue-time">—</div></button>
+            <button class="dj-cue-pad" id="dj-cue-2"><div class="cue-num">3</div><div class="cue-time">—</div></button>
+            <button class="dj-cue-pad" id="dj-cue-3"><div class="cue-num">4</div><div class="cue-time">—</div></button>
+          </div>
+        </div>
+
+      </div>
+    </div>
 
     <!-- EQ Panel -->
     <div id="eq-panel">
@@ -243,6 +415,7 @@ export function renderPlayer(container) {
         </div>
         <button class="eq-toggle-btn active" id="normalize-toggle-btn" title="Loudness normalization">NORM</button>
         <button class="eq-toggle-btn" id="eq-toggle-btn">EQ</button>
+        <button class="eq-toggle-btn" id="dj-toggle-btn" style="color:#FF80B0">DJ</button>
       </div>
     </div>
   `;
@@ -258,6 +431,7 @@ export function renderPlayer(container) {
   setupEQ(player);
   setupVolume(player);
   setupNormalization(player);
+  setupDJ(player);
   bindEngineEvents(player);
 }
 
@@ -391,43 +565,67 @@ function setupWaveform(player) {
 
 function drawWaveform() {
   if (!waveformCanvas || !waveformCtx) return;
-  const peaks = store.get('waveformPeaks') || [];
-  const progress = store.get('duration') > 0 ? store.get('currentTime') / store.get('duration') : 0;
-  const W = waveformCanvas.offsetWidth || 400;
-  const H = waveformCanvas.offsetHeight || 32;
+  const peaks    = store.get('waveformPeaks') || [];
+  const dur      = store.get('duration') || 0;
+  const progress = dur > 0 ? store.get('currentTime') / dur : 0;
+
+  const dpr = window.devicePixelRatio || 1;
+  const W   = waveformCanvas.offsetWidth  || 400;
+  const H   = waveformCanvas.offsetHeight || 44;
+
+  if (waveformCanvas.width  !== Math.round(W * dpr) ||
+      waveformCanvas.height !== Math.round(H * dpr)) {
+    waveformCanvas.width  = Math.round(W * dpr);
+    waveformCanvas.height = Math.round(H * dpr);
+    waveformCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
 
   waveformCtx.fillStyle = '#001828';
   waveformCtx.fillRect(0, 0, W, H);
+
+  const cy = H / 2;
+
   if (peaks.length === 0) {
-    // Empty bars placeholder
-    const n = 80;
+    const n = 120;
     for (let i = 0; i < n; i++) {
-      waveformCtx.fillStyle = 'rgba(0,120,140,0.3)';
-      const x = (i / n) * W;
-      const w = Math.max(1, W / n - 1.5);
-      const h = 4 + Math.sin(i * 0.3) * 3;
-      waveformCtx.fillRect(x, (H - h) / 2, w, h);
+      const x    = (i / n) * W;
+      const barW = Math.max(1, W / n - 0.8);
+      const barH = 2 + Math.abs(Math.sin(i * 0.5)) * 3;
+      waveformCtx.fillStyle = 'rgba(0,100,120,0.35)';
+      waveformCtx.fillRect(x, cy - barH / 2, barW, barH);
     }
+    // Center axis
+    waveformCtx.fillStyle = 'rgba(0,160,160,0.15)';
+    waveformCtx.fillRect(0, cy - 0.5, W, 1);
     return;
   }
 
-  const n = peaks.length;
-  const barW = Math.max(1, W / n - 1);
+  const n         = peaks.length;
+  const barW      = Math.max(1.5, W / n - 0.5);
   const progressX = progress * W;
 
   for (let i = 0; i < n; i++) {
-    const x = (i / n) * W;
-    const h = Math.max(2, peaks[i] * H * 0.9);
+    const x     = (i / n) * W;
+    const barH  = Math.max(2, peaks[i] * H * 0.88);
     const played = x < progressX;
-    waveformCtx.fillStyle = played ? '#00DCDC' : 'rgba(0,100,130,0.5)';
-    waveformCtx.fillRect(x, (H - h) / 2, barW, h);
+
+    // SoundCloud-style: bars grow symmetrically from center
+    waveformCtx.fillStyle = played
+      ? '#00DCDC'                     // played: bright teal
+      : 'rgba(0,120,150,0.45)';       // unplayed: dim
+
+    waveformCtx.fillRect(x, cy - barH / 2, barW, barH);
   }
 
-  // Playhead
-  if (progress > 0 && progress < 1) {
-    waveformCtx.fillStyle = '#fff';
-    waveformCtx.fillRect(progressX - 0.75, 0, 1.5, H);
+  // Playhead — sharp bright line
+  if (progress > 0.001 && progress < 0.999) {
+    waveformCtx.fillStyle = 'rgba(255,255,255,0.9)';
+    waveformCtx.fillRect(Math.round(progressX) - 1, 0, 2, H);
   }
+
+  // Center axis reference
+  waveformCtx.fillStyle = 'rgba(0,180,180,0.1)';
+  waveformCtx.fillRect(0, cy - 0.5, W, 1);
 }
 
 // ─── EQ ────────────────────────────────────────────────────────────────────
@@ -709,4 +907,161 @@ function showToast(msg, type = '') {
   t.textContent = msg;
   t.className = `show ${type}`;
   setTimeout(() => { t.className = ''; }, 3200);
+}
+
+// ─── DJ Console ────────────────────────────────────────────────────────────
+
+function fmtSec(s) {
+  if (!s && s !== 0) return '—';
+  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+  const ms = Math.floor((s % 1) * 10);
+  return `${m}:${String(sec).padStart(2,'0')}.${ms}`;
+}
+
+function setupDJ(player) {
+  const djPanel  = player.querySelector('#dj-panel');
+  const djToggle = player.querySelector('#dj-toggle-btn');
+  const eqPanel  = player.querySelector('#eq-panel');
+  const eqToggle = player.querySelector('#eq-toggle-btn');
+
+  // DJ toggle — mutually exclusive with EQ panel
+  djToggle.addEventListener('click', () => {
+    const opening = !djPanel.classList.contains('open');
+    djPanel.classList.toggle('open', opening);
+    djToggle.classList.toggle('active', opening);
+    if (opening) {
+      djToggle.style.color = opening ? '#FF80B0' : '';
+      eqPanel.classList.remove('open');
+      eqToggle.classList.remove('active');
+      store.set('showEq', false);
+    } else {
+      djToggle.style.color = '';
+    }
+  });
+
+  // ── Stem presets ────────────────────────────────────────────────────────
+  player.querySelectorAll('[data-stem]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      engine.applyStemPreset(btn.dataset.stem);
+      // Sync kill button visual state after stem changes kills
+      updateKillButtons(player);
+      showToast(`Stem: ${btn.dataset.stem.toUpperCase()}`, 'success');
+    });
+  });
+
+  // ── Filter sliders ───────────────────────────────────────────────────────
+  const hpSlider  = player.querySelector('#dj-hp');
+  const hpVal     = player.querySelector('#dj-hp-val');
+  const lpSlider  = player.querySelector('#dj-lp');
+  const lpVal     = player.querySelector('#dj-lp-val');
+  const revSlider = player.querySelector('#dj-rev');
+  const revVal    = player.querySelector('#dj-rev-val');
+  const dlySlider = player.querySelector('#dj-dly');
+  const dlyVal    = player.querySelector('#dj-dly-val');
+
+  hpSlider.addEventListener('input', () => {
+    const hz = parseInt(hpSlider.value);
+    engine.setHPFreq(hz);
+    hpVal.textContent = hz < 1000 ? `${hz}Hz` : `${(hz/1000).toFixed(1)}k`;
+  });
+  lpSlider.addEventListener('input', () => {
+    const hz = parseInt(lpSlider.value);
+    engine.setLPFreq(hz);
+    lpVal.textContent = hz >= 10000 ? `${(hz/1000).toFixed(0)}k` : `${(hz/1000).toFixed(1)}k`;
+  });
+  revSlider.addEventListener('input', () => {
+    engine.setReverbLevel(parseInt(revSlider.value) / 100);
+    revVal.textContent = `${revSlider.value}%`;
+  });
+  dlySlider.addEventListener('input', () => {
+    engine.setDelayLevel(parseInt(dlySlider.value) / 100);
+    dlyVal.textContent = `${dlySlider.value}%`;
+  });
+
+  // ── EQ Kill buttons ───────────────────────────────────────────────────────
+  player.querySelector('#dj-kill-bass').addEventListener('click', () => {
+    engine.killBand('bass', !engine.isKilled('bass'));
+    updateKillButtons(player);
+  });
+  player.querySelector('#dj-kill-mid').addEventListener('click', () => {
+    engine.killBand('mid', !engine.isKilled('mid'));
+    updateKillButtons(player);
+  });
+  player.querySelector('#dj-kill-high').addEventListener('click', () => {
+    engine.killBand('high', !engine.isKilled('high'));
+    updateKillButtons(player);
+  });
+
+  // Sync kill buttons when state changes externally (e.g., stem presets)
+  engine.on('killchanged', () => updateKillButtons(player));
+
+  // ── Loop controls ──────────────────────────────────────────────────────────
+  const loopDisplay = player.querySelector('#dj-loop-display');
+  const loopToggle  = player.querySelector('#dj-loop-toggle');
+
+  player.querySelector('#dj-loop-in').addEventListener('click', () => {
+    engine.setLoopIn();
+    updateLoopDisplay(player);
+  });
+  player.querySelector('#dj-loop-out').addEventListener('click', () => {
+    engine.setLoopOut();
+    updateLoopDisplay(player);
+  });
+  loopToggle.addEventListener('click', () => {
+    engine.toggleLoop();
+    loopToggle.classList.toggle('active', engine.loopState.active);
+    updateLoopDisplay(player);
+  });
+
+  engine.on('loopchanged', () => {
+    loopToggle.classList.toggle('active', engine.loopState.active);
+    updateLoopDisplay(player);
+  });
+
+  // ── Hot Cue pads ──────────────────────────────────────────────────────────
+  for (let i = 0; i < 4; i++) {
+    const pad = player.querySelector(`#dj-cue-${i}`);
+    pad.addEventListener('click', () => {
+      engine.jumpToHotCue(i);
+      updateCuePads(player);
+    });
+    pad.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      engine.clearHotCue(i);
+      updateCuePads(player);
+    });
+  }
+
+  engine.on('hotcuechanged', () => updateCuePads(player));
+  updateCuePads(player);
+}
+
+function updateKillButtons(player) {
+  player.querySelector('#dj-kill-bass')?.classList.toggle('killed', engine.isKilled('bass'));
+  player.querySelector('#dj-kill-mid')?.classList.toggle('killed', engine.isKilled('mid'));
+  player.querySelector('#dj-kill-high')?.classList.toggle('killed', engine.isKilled('high'));
+}
+
+function updateLoopDisplay(player) {
+  const el = player.querySelector('#dj-loop-display');
+  if (!el) return;
+  const { active, start, end } = engine.loopState;
+  if (end <= start) { el.textContent = '— SET IN + OUT —'; return; }
+  el.textContent = `${fmtSec(start)} → ${fmtSec(end)}${active ? ' ↻' : ''}`;
+}
+
+function updateCuePads(player) {
+  const cues = engine.getHotCues();
+  cues.forEach((time, i) => {
+    const pad  = player.querySelector(`#dj-cue-${i}`);
+    if (!pad) return;
+    const timeEl = pad.querySelector('.cue-time');
+    if (time !== null) {
+      pad.classList.add('set');
+      if (timeEl) timeEl.textContent = fmtSec(time);
+    } else {
+      pad.classList.remove('set');
+      if (timeEl) timeEl.textContent = '—';
+    }
+  });
 }
