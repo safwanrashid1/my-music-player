@@ -2,6 +2,7 @@ import { store } from '../stores/app.js';
 import { api } from '../api/client.js';
 import { playTrack } from '../components/Player.js';
 import { openAddToCollectionModal } from '../components/AddToCollectionModal.js';
+import { isLiked, likeTrack, unlikeTrack } from '../likes.js';
 
 let page = 1;
 let loading = false;
@@ -286,7 +287,7 @@ function buildTrackCard(track) {
     </div>
     <div class="track-footer">
       <div class="track-stats">
-        <span class="track-stat like-btn" data-like-btn title="Like">♥${fmtNum(track.like_count)}</span>
+        <span class="track-stat like-btn ${isLiked(track.id) ? 'liked' : ''}" data-like-btn title="${isLiked(track.id) ? 'Unlike' : 'Like'}">${isLiked(track.id) ? '♥' : '♡'}${fmtNum(track.like_count)}</span>
         <span class="track-stat add-btn" data-add-btn title="Add to album or playlist">+</span>
         ${dur ? `<span class="track-stat" style="color:var(--playlist-dur)">${dur}</span>` : ''}
       </div>
@@ -303,12 +304,24 @@ function buildTrackCard(track) {
   const likeBtn = card.querySelector('[data-like-btn]');
   likeBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
+    const alreadyLiked = isLiked(track.id);
+    likeBtn.style.opacity = '0.5';
     try {
-      await api.likeTrack(track.id);
-      track.like_count = (track.like_count || 0) + 1;
-      likeBtn.className = 'track-stat like-btn liked';
-      likeBtn.innerHTML = `♥ ${fmtNum(track.like_count)}`;
-    } catch {}
+      if (alreadyLiked) {
+        await unlikeTrack(track.id);
+        track.like_count = Math.max(0, (track.like_count || 1) - 1);
+        likeBtn.className = 'track-stat like-btn';
+        likeBtn.title = 'Like';
+        likeBtn.innerHTML = `♡${fmtNum(track.like_count)}`;
+      } else {
+        await likeTrack(track.id);
+        track.like_count = (track.like_count || 0) + 1;
+        likeBtn.className = 'track-stat like-btn liked';
+        likeBtn.title = 'Unlike';
+        likeBtn.innerHTML = `♥${fmtNum(track.like_count)}`;
+      }
+    } catch { /* restore visual if request fails */ }
+    likeBtn.style.opacity = '';
   });
 
   // Add to playlist/album

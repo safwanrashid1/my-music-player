@@ -179,6 +179,14 @@ router.post('/:id/like', async (req, res) => {
   res.json({ liked: true });
 });
 
+router.delete('/:id/like', async (req, res) => {
+  const db = await getDb();
+  const track = dbGet(db, 'SELECT id FROM tracks WHERE id=?', [req.params.id]);
+  if (!track) return res.status(404).json({ error: 'Track not found' });
+  dbRun(db, 'UPDATE tracks SET like_count=MAX(0, like_count-1) WHERE id=?', [req.params.id]);
+  res.json({ liked: false });
+});
+
 router.get('/:id/comments', async (req, res) => {
   const db = await getDb();
   const comments = dbAll(db, `SELECT * FROM comments WHERE track_id=? ORDER BY created_at ASC`, [req.params.id]);

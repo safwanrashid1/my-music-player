@@ -26,7 +26,8 @@ export const api = {
   getStatus:  (id)          => request('GET', `/tracks/${id}/status`),
   getWaveform:(id)          => request('GET', `/tracks/${id}/waveform`),
   deleteTrack:(id)          => request('DELETE', `/tracks/${id}`),
-  likeTrack:  (id)          => request('POST', `/tracks/${id}/like`),
+  likeTrack:  (id)          => request('POST',   `/tracks/${id}/like`),
+  unlikeTrack:(id)          => request('DELETE', `/tracks/${id}/like`),
   getComments:(id)          => request('GET',  `/tracks/${id}/comments`),
   postComment:(id, body)    => request('POST', `/tracks/${id}/comments`, body),
 
@@ -44,13 +45,17 @@ export const api = {
         if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
       };
       xhr.onload = () => {
+        if (xhr.status === 413) {
+          reject(new Error('File too large — server rejected it. Check MAX_FILE_SIZE_MB in backend/.env'));
+          return;
+        }
         try {
           const data = JSON.parse(xhr.responseText);
           if (xhr.status >= 200 && xhr.status < 300) resolve(data);
           else reject(new Error(data.error || `HTTP ${xhr.status}`));
-        } catch { reject(new Error('Invalid response')); }
+        } catch { reject(new Error('Invalid server response')); }
       };
-      xhr.onerror = () => reject(new Error('Network error'));
+      xhr.onerror = () => reject(new Error('Network error — check the backend is running'));
       xhr.send(fd);
     });
   },

@@ -13,12 +13,26 @@ let nextUid = 1;
 let onQueueChange = null;
 let currentAlbumName = '';
 
+// Matches backend MAX_FILE_SIZE_MB env default; shown to user before upload attempt.
+const MAX_FILE_BYTES = 2048 * 1024 * 1024; // 2 GB
+
 export function addFiles(fileList) {
-  const album = currentAlbumName.trim(); // snapshot at add-time
+  const album = currentAlbumName.trim();
   const accepted = [];
   for (const file of fileList) {
     const ext = '.' + file.name.split('.').pop().toLowerCase();
     if (!ACCEPTED.includes(ext)) continue;
+    // Client-side size guard — catch it before the browser even tries to XHR
+    // a multi-GB file, which can lock the UI or clip the upload mid-stream.
+    if (file.size > MAX_FILE_BYTES) {
+      accepted.push({
+        uid: nextUid++, file, ext, album,
+        status: 'error',
+        error: `File too large: ${fmtBytes(file.size)} (max 2 GB)`,
+        progress: 0, trackId: null,
+      });
+      continue;
+    }
     accepted.push({ uid: nextUid++, file, ext, album, status: 'pending', progress: 0, trackId: null, error: null });
   }
   if (accepted.length === 0) return false;
@@ -26,6 +40,13 @@ export function addFiles(fileList) {
   onQueueChange?.();
   runQueue();
   return true;
+}
+
+function fmtBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+  if (b < 1024 * 1024 * 1024) return (b / 1024 / 1024).toFixed(1) + ' MB';
+  return (b / 1024 / 1024 / 1024).toFixed(2) + ' GB';
 }
 
 let queueRunning = false;
@@ -232,7 +253,7 @@ function queueRowHtml(item) {
       <span class="file-icon">${isLossless ? '◈' : '♪'}</span>
       <div class="upload-row-info">
         <div class="file-name">${escHtml(item.file.name)}</div>
-        <div class="file-size">${formatBytes(item.file.size)} · <span class="badge ${isLossless ? '' : 'badge-amber'}">${item.ext.slice(1).toUpperCase()}</span></div>
+        <div class="file-size">${fmtBytes(item.file.size)} · <span class="badge ${isLossless ? '' : 'badge-amber'}">${item.ext.slice(1).toUpperCase()}</span></div>
       </div>
       <div class="upload-row-status">${statusHtml}</div>
       ${removable ? `<button class="action-btn del" data-remove title="Remove">✕</button>` : ''}
@@ -240,10 +261,6 @@ function queueRowHtml(item) {
   `;
 }
 
-function formatBytes(b) {
-  if (b < 1024) return b + ' B';
-  if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
-  return (b / 1024 / 1024).toFixed(1) + ' MB';
-}
+// fmtBytes defined at top of module (alongside addFiles) — removed duplicate here
 
 function escHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }

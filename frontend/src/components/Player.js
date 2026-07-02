@@ -145,21 +145,21 @@ export function renderPlayer(container) {
       }
 
       /* Waveform + time */
-      .player-waveform-wrap { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+      .player-waveform-wrap { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
       .time-row {
         display: flex; justify-content: space-between;
-        font-family: var(--pixel); font-size: 18px;
-        color: var(--lcd-text); letter-spacing: 2px;
-        padding: 2px 4px;
+        font-family: var(--pixel); font-size: 14px;
+        color: var(--lcd-text); letter-spacing: 1px;
+        padding: 1px 6px;
         background: var(--lcd);
         box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #203040, 0 0 0 1px var(--chrome-edge);
-        flex-shrink: 0;
+        flex-shrink: 0; height: 18px;
       }
       #time-current { color: var(--lcd-text); }
       #time-duration { color: var(--lcd-dim); }
       #waveform-canvas {
-        flex: 1; width: 100%; cursor: pointer; display: block;
-        min-height: 28px;
+        width: 100%; cursor: pointer; display: block;
+        height: 22px; flex-shrink: 0;
       }
 
       /* Right controls */
