@@ -81,119 +81,214 @@ export function renderPlayer(container) {
         box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #203040, 0 0 0 1px var(--chrome-edge);
       }
 
-      /* ── Main player bar ── */
+      /* ══════════════════════════════════════════════════════════════════════
+         WINAMP 2.x CLASSIC SKIN — main player layout
+         Two-zone: LCD display area (top) + chrome hardware controls (bottom)
+         ══════════════════════════════════════════════════════════════════════ */
+
+      @keyframes marquee-text {
+        0%   { transform: translateX(0); }
+        15%  { transform: translateX(0); }
+        85%  { transform: translateX(var(--marquee-offset, -40%)); }
+        100% { transform: translateX(0); }
+      }
+
       #player-bar {
-        height: var(--player-h); display: flex; align-items: center;
-        gap: 10px; padding: 0 12px; flex-shrink: 0;
+        display: flex; flex-direction: column;
+        height: var(--player-h); flex-shrink: 0;
       }
 
-      /* LCD display block — track info + time */
-      #player-lcd {
-        background: var(--lcd);
-        box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #203040, 0 0 0 1px var(--chrome-edge);
-        padding: 5px 10px;
-        display: flex; flex-direction: column; justify-content: center;
-        width: 200px; flex-shrink: 0; height: 52px; overflow: hidden;
+      /* ─ Zone 1: LCD display ─────────────────────────────────────────────── */
+      #player-display {
+        flex: 1; min-height: 0;
+        background: #001828;
+        display: flex; flex-direction: column;
+        padding: 3px 8px 2px;
+        gap: 1px;
+        box-shadow:
+          inset 2px 2px 0 #000810,
+          inset -1px -1px 0 #002840;
       }
-      .player-title {
+
+      /* Title row */
+      #disp-title-row {
+        display: flex; align-items: center; gap: 6px;
+        flex-shrink: 0; overflow: hidden; height: 20px;
+      }
+
+      /* Playing LED indicator */
+      #playing-led {
+        width: 7px; height: 7px; flex-shrink: 0;
+        background: #003040;
+        box-shadow: inset 1px 1px 0 rgba(0,0,0,0.5);
+      }
+      #playing-led.on {
+        background: #00CC44;
+        box-shadow: 0 0 4px #00CC44, 0 0 8px rgba(0,204,68,0.5);
+      }
+
+      /* Scrolling title */
+      #title-marquee-wrap {
+        flex: 1; overflow: hidden; min-width: 0;
+      }
+      #title-marquee { white-space: nowrap; }
+      #title-marquee.scrolling #player-title {
+        animation: marquee-text 12s ease-in-out infinite;
+      }
+      #player-title {
         font-family: var(--pixel); font-size: 15px;
-        color: var(--lcd-text); letter-spacing: 1px;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        color: #00DCDC; letter-spacing: 1px;
+        display: inline-block;
       }
-      .player-artist {
-        font-family: var(--pixel); font-size: 12px;
-        color: var(--lcd-dim); letter-spacing: 0.5px;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      }
-      .player-badges { display: flex; gap: 3px; margin-top: 3px; flex-wrap: wrap; }
 
-      /* Transport buttons — chunky tape-deck style */
-      .player-controls { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-      .ctrl-btn {
-        width: 28px; height: 28px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 12px; flex-shrink: 0;
+      /* Spec: artist · kbps · kHz · ST */
+      #spec-badges {
+        display: flex; align-items: center; gap: 3px;
+        flex-shrink: 0;
+        font-family: var(--mono); font-size: 10px;
+      }
+      .spec-val   { color: #00AAAA; }
+      .spec-label { color: #005A60; font-size: 9px; }
+      .spec-sep   { color: #003040; }
+      #player-stereo {
+        font-family: var(--pixel); font-size: 11px;
+        color: #00CC44; letter-spacing: 1px;
+      }
+
+      /* ─ Waveform + time row ─ */
+      #disp-wave-row {
+        display: flex; align-items: stretch; gap: 6px;
+        flex: 1; min-height: 0; overflow: hidden;
+      }
+
+      /* Time display — large 7-segment LCD style */
+      #time-display {
+        display: flex; align-items: flex-end; gap: 1px;
+        flex-shrink: 0; padding-bottom: 1px;
+      }
+      .time-sign {
+        font-family: var(--pixel); font-size: 12px;
+        color: #005060; line-height: 1; padding-bottom: 2px;
+      }
+      #time-current {
+        font-family: var(--pixel); font-size: 28px; letter-spacing: 3px;
+        color: #00DCDC; line-height: 1;
+      }
+      #time-duration-wrap {
+        display: flex; align-items: flex-end; flex-shrink: 0;
+        padding-bottom: 1px;
+      }
+      #time-duration {
+        font-family: var(--pixel); font-size: 13px;
+        color: #00606A; letter-spacing: 1px; line-height: 1;
+      }
+
+      /* Waveform canvas — fills the gap between the time displays */
+      #waveform-canvas {
+        flex: 1; width: 100%; min-width: 0;
+        cursor: pointer; display: block;
+        background: #001828;
+      }
+
+      /* Badges row (format / kHz / bit-depth) */
+      .player-badges { display: flex; gap: 2px; flex-wrap: wrap; }
+      .player-artist { display: none; } /* hidden — shown in spec badges instead */
+
+      /* ─ Zone 2: Chrome hardware controls ─────────────────────────────────── */
+      #player-controls {
+        display: flex; align-items: center; gap: 5px;
+        padding: 3px 8px; flex-shrink: 0; height: 36px;
         background: var(--chrome);
-        color: var(--text);
+        box-shadow: inset 0 1px 0 var(--chrome-hi);
+      }
+
+      /* Tape-deck transport buttons */
+      #transport { display: flex; gap: 2px; flex-shrink: 0; }
+      .tp-btn {
+        font-family: var(--pixel); font-size: 13px; letter-spacing: 0.5px;
+        padding: 3px 6px; cursor: pointer; flex-shrink: 0;
+        background: var(--chrome); color: var(--text);
         box-shadow:
           inset 1px 1px 0 var(--chrome-hi),
           inset -1px -1px 0 var(--chrome-lo),
           0 0 0 1px var(--chrome-edge);
+        display: flex; align-items: center; justify-content: center;
+        min-width: 24px; height: 22px;
       }
-      .ctrl-btn:hover { background: var(--chrome-hi); }
-      .ctrl-btn:active {
+      .tp-btn:hover { background: var(--chrome-hi); }
+      .tp-btn:active {
         box-shadow:
           inset 1px 1px 0 var(--chrome-lo),
           inset -1px -1px 0 var(--chrome-hi),
           0 0 0 1px var(--chrome-edge);
       }
+      /* Play button — LCD-styled, stands out */
       #btn-play {
-        width: 36px; height: 36px; font-size: 14px;
-        background: var(--lcd);
-        color: var(--lcd-text);
+        background: #001828;
+        color: #00DCDC;
+        padding: 3px 12px; font-size: 14px;
         box-shadow:
           inset 1px 1px 0 #002840,
           inset -1px -1px 0 #000810,
           0 0 0 1px var(--chrome-edge);
       }
-      #btn-play:hover { background: var(--playlist-hover); color: #fff; }
+      #btn-play:hover { background: #002040; color: #00FFFF; }
       #btn-play:active {
         box-shadow:
           inset 1px 1px 0 #000,
           inset -1px -1px 0 #004060,
           0 0 0 1px var(--chrome-edge);
       }
+      #btn-play.paused { color: #00888A; }
 
-      /* Waveform + time */
-      .player-waveform-wrap { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-      .time-row {
-        display: flex; justify-content: space-between;
-        font-family: var(--pixel); font-size: 14px;
-        color: var(--lcd-text); letter-spacing: 2px;
-        padding: 2px 8px;
-        background: var(--lcd);
-        box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #203040, 0 0 0 1px var(--chrome-edge);
-        flex-shrink: 0; height: 20px;
+      /* Volume / Balance sliders */
+      #vol-group, #bal-group {
+        display: flex; align-items: center; gap: 3px; flex-shrink: 0;
       }
-      #time-current { color: var(--lcd-text); }
-      #time-duration { color: var(--lcd-dim); }
-      /* SoundCloud-style waveform — tall, prominent, symmetric bars */
-      #waveform-canvas {
-        width: 100%; cursor: pointer; display: block;
-        flex: 1; min-height: 44px;
-        background: var(--lcd);
-        box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #203040;
+      .sl-label {
+        font-family: var(--pixel); font-size: 11px; letter-spacing: 1px;
+        color: var(--text3); flex-shrink: 0;
       }
+      #vol-slider { width: 68px; }
+      #bal-slider { width: 46px; }
 
-      /* Right controls */
-      .player-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-      .vol-wrap { display: flex; align-items: center; gap: 4px; }
-      .vol-icon { font-size: 13px; color: var(--text3); font-family: var(--pixel); }
-      #vol-slider { width: 64px; }
-      .eq-toggle-btn {
-        font-family: var(--pixel); font-size: 13px; padding: 3px 8px;
-        letter-spacing: 1px; text-transform: uppercase;
-        background: var(--chrome);
-        color: var(--text2);
+      /* Mode / utility buttons (right cluster) */
+      #mode-btns {
+        display: flex; align-items: center; gap: 1px;
+        margin-left: auto; flex-shrink: 0;
+      }
+      .mode-btn {
+        font-family: var(--pixel); font-size: 11px; letter-spacing: 0.5px;
+        padding: 2px 6px; cursor: pointer;
+        background: var(--chrome-dark); color: var(--text3);
         box-shadow:
           inset 1px 1px 0 var(--chrome-hi),
           inset -1px -1px 0 var(--chrome-lo),
           0 0 0 1px var(--chrome-edge);
+        height: 18px; display: flex; align-items: center;
+        text-transform: uppercase; white-space: nowrap;
       }
-      .eq-toggle-btn:hover { background: var(--chrome-hi); }
-      .eq-toggle-btn.active {
-        background: var(--lcd);
-        color: var(--lcd-text);
+      .mode-btn:hover { background: var(--chrome); color: var(--text); }
+      .mode-btn.active {
+        background: #001828;
+        color: #00DCDC;
         box-shadow:
           inset 1px 1px 0 #000,
           inset -1px -1px 0 #203040,
           0 0 0 1px var(--chrome-edge);
       }
+      .mode-sep {
+        width: 0; height: 14px; margin: 0 3px;
+        border-left: 1px solid var(--chrome-lo);
+        border-right: 1px solid var(--chrome-hi);
+      }
 
-      /* idle state */
-      /* idle: just slightly dimmed — does NOT block clicks or create an overlay */
-      #player-bar.idle #player-lcd { opacity: 0.75; }
-      #player-bar.idle .player-waveform-wrap { opacity: 0.55; }
+      /* Idle: dim display, keep controls usable */
+      #player-bar.idle #player-display { opacity: 0.65; }
+
+      /* Aliases for legacy code that targets old class names */
+      .eq-toggle-btn { /* mapped to .mode-btn by HTML */ }
+      .ctrl-btn      { /* mapped to .tp-btn by HTML */ }
 
       /* ── DJ Console Panel ── */
       #dj-panel {
@@ -387,37 +482,81 @@ export function renderPlayer(container) {
       <div class="eq-bands-row" id="eq-bands-row"></div>
     </div>
 
-    <!-- Player Bar -->
+    <!-- ══ MAIN PLAYER — Winamp 2.x authentic layout ══ -->
     <div id="player-bar" class="idle">
-      <div id="player-lcd">
-        <div class="player-title" id="player-title">NO TRACK LOADED</div>
-        <div class="player-artist" id="player-artist">——</div>
-        <div class="player-badges" id="player-badges"></div>
-      </div>
 
-      <div class="player-controls">
-        <button class="ctrl-btn" id="btn-prev" title="Previous">⏮</button>
-        <button class="ctrl-btn" id="btn-play" title="Play / Pause">▶</button>
-        <button class="ctrl-btn" id="btn-next" title="Next">⏭</button>
-      </div>
+      <!-- Zone 1: LCD display area -->
+      <div id="player-display">
 
-      <div class="player-waveform-wrap">
-        <div class="time-row">
-          <span id="time-current">0:00</span>
-          <span id="time-duration">0:00</span>
+        <!-- Row 1: scrolling title + spec info -->
+        <div id="disp-title-row">
+          <div id="playing-led" title="Playing"></div>
+          <div id="title-marquee-wrap">
+            <div id="title-marquee">
+              <span id="player-title">NO TRACK LOADED</span>
+            </div>
+          </div>
+          <div id="spec-badges">
+            <span id="player-artist" class="spec-val" style="display:none"></span>
+            <span id="player-kbps"  class="spec-val">---</span>
+            <span class="spec-label">kbps</span>
+            <span class="spec-sep">·</span>
+            <span id="player-khz"   class="spec-val">--.-</span>
+            <span class="spec-label">kHz</span>
+            <span id="player-stereo" class="spec-val">ST</span>
+          </div>
         </div>
-        <canvas id="waveform-canvas"></canvas>
+
+        <!-- Row 2: time + waveform visualizer + duration + badges -->
+        <div id="disp-wave-row">
+          <div id="time-display">
+            <span class="time-sign">+</span>
+            <span id="time-current">0:00</span>
+          </div>
+          <canvas id="waveform-canvas"></canvas>
+          <div id="time-duration-wrap">
+            <span id="time-duration">0:00</span>
+          </div>
+          <div class="player-badges" id="player-badges"></div>
+        </div>
+
       </div>
 
-      <div class="player-right">
-        <div class="vol-wrap">
-          <span class="vol-icon">▲</span>
-          <input type="range" id="vol-slider" min="0" max="100" value="85" title="Volume" />
+      <!-- Zone 2: Chrome hardware controls -->
+      <div id="player-controls">
+
+        <!-- Tape-deck transport buttons -->
+        <div id="transport">
+          <button class="tp-btn" id="btn-prev"  title="Previous (P)">⏮</button>
+          <button class="tp-btn" id="btn-play"  title="Play/Pause (Space)">▶</button>
+          <button class="tp-btn" id="btn-stop"  title="Stop">■</button>
+          <button class="tp-btn" id="btn-next"  title="Next (N)">⏭</button>
         </div>
-        <button class="eq-toggle-btn active" id="normalize-toggle-btn" title="Loudness normalization">NORM</button>
-        <button class="eq-toggle-btn" id="eq-toggle-btn">EQ</button>
-        <button class="eq-toggle-btn" id="dj-toggle-btn" style="color:#FF80B0">DJ</button>
-        <button class="eq-toggle-btn" id="expand-toggle-btn" title="Expand / collapse player">▲</button>
+
+        <!-- Volume -->
+        <div id="vol-group">
+          <span class="sl-label">VOL</span>
+          <input type="range" id="vol-slider" min="0" max="100" value="85" title="Volume (↑↓)" />
+        </div>
+
+        <!-- Balance -->
+        <div id="bal-group">
+          <span class="sl-label">BAL</span>
+          <input type="range" id="bal-slider" min="-50" max="50" value="0" title="Balance" />
+        </div>
+
+        <!-- Utility / mode buttons (right cluster) -->
+        <div id="mode-btns">
+          <button class="mode-btn" id="shuffle-btn"         title="Shuffle">SHF</button>
+          <button class="mode-btn" id="repeat-btn"          title="Repeat">REP</button>
+          <div class="mode-sep"></div>
+          <button class="mode-btn active" id="normalize-toggle-btn" title="Loudness Normalization">NORM</button>
+          <button class="mode-btn" id="eq-toggle-btn"       title="Equalizer (EQ)">EQ</button>
+          <button class="mode-btn" id="dj-toggle-btn"       title="DJ Console" style="color:#FF90C0">DJ</button>
+          <div class="mode-sep"></div>
+          <button class="mode-btn" id="expand-toggle-btn"   title="Expand / collapse player">▲</button>
+        </div>
+
       </div>
     </div>
   `;
@@ -459,6 +598,42 @@ function setupTransport(player) {
   player.querySelector('#btn-play').addEventListener('click', togglePlay);
   player.querySelector('#btn-prev').addEventListener('click', prevTrack);
   player.querySelector('#btn-next').addEventListener('click', nextTrack);
+  player.querySelector('#btn-stop')?.addEventListener('click', () => {
+    engine.pause();
+    engine.seek(0);
+  });
+
+  // Shuffle
+  let _shuffle = false;
+  player.querySelector('#shuffle-btn')?.addEventListener('click', () => {
+    _shuffle = !_shuffle;
+    player.querySelector('#shuffle-btn').classList.toggle('active', _shuffle);
+    store.set('shuffle', _shuffle);
+  });
+
+  // Repeat
+  let _repeat = false;
+  player.querySelector('#repeat-btn')?.addEventListener('click', () => {
+    _repeat = !_repeat;
+    player.querySelector('#repeat-btn').classList.toggle('active', _repeat);
+    store.set('repeat', _repeat);
+  });
+
+  // Balance slider (stereo pan via Web Audio StereoPannerNode if available)
+  const balSlider = player.querySelector('#bal-slider');
+  balSlider?.addEventListener('input', () => {
+    const v = parseFloat(balSlider.value) / 50; // -1…+1
+    if (engine.ctx && engine.masterGain) {
+      // Simple L/R balance via gain if no dedicated panner
+      if (!engine._balPanner) {
+        engine._balPanner = engine.ctx.createStereoPanner();
+        engine.masterGain.disconnect();
+        engine.masterGain.connect(engine._balPanner);
+        engine._balPanner.connect(engine.ctx.destination);
+      }
+      engine._balPanner.pan.setTargetAtTime(v, engine.ctx.currentTime, 0.02);
+    }
+  });
 }
 
 export async function playTrack(track) {
@@ -518,20 +693,47 @@ function prefetchNext(queue, currentIdx) {
 // ─── Track Info ────────────────────────────────────────────────────────────
 
 function updatePlayerInfo(track) {
-  const title = document.querySelector('#player-title');
-  const artist = document.querySelector('#player-artist');
-  const badges = document.querySelector('#player-badges');
+  // ─ Winamp LCD title (with marquee scroll for long titles) ─
+  const titleEl   = document.querySelector('#player-title');
+  const marqueeEl = document.querySelector('#title-marquee');
+  const titleStr  = (track.title || 'UNTITLED').toUpperCase();
+  if (titleEl) {
+    titleEl.textContent = titleStr;
+    // Trigger marquee only when text overflows the container
+    if (marqueeEl) {
+      marqueeEl.classList.remove('scrolling');
+      requestAnimationFrame(() => {
+        const wrap = marqueeEl.parentElement;
+        if (wrap && titleEl.scrollWidth > wrap.clientWidth) {
+          const overflow = titleEl.scrollWidth - wrap.clientWidth;
+          const pct = Math.min(60, Math.round((overflow / wrap.clientWidth) * 100));
+          marqueeEl.style.setProperty('--marquee-offset', `-${pct}%`);
+          marqueeEl.classList.add('scrolling');
+        }
+      });
+    }
+  }
 
-  if (title) title.textContent = (track.title || 'UNTITLED').toUpperCase();
-  if (artist) artist.textContent = track.artist || '——';
+  // ─ Spec badges: kbps · kHz · ST ─
+  const kbpsEl   = document.querySelector('#player-kbps');
+  const khzEl    = document.querySelector('#player-khz');
+  const stereoEl = document.querySelector('#player-stereo');
+  if (kbpsEl)   kbpsEl.textContent   = track.bitrate ? Math.round(track.bitrate / 1000) : '---';
+  if (khzEl)    khzEl.textContent    = track.sample_rate ? (track.sample_rate / 1000).toFixed(1) : '--.-';
+  if (stereoEl) stereoEl.textContent = track.channels === 1 ? 'MO' : 'ST';
+
+  // ─ Format / LUFS badges (shown next to duration) ─
+  const badges = document.querySelector('#player-badges');
   if (badges) {
     const parts = [];
     if (track.original_format) parts.push(`<span class="badge">${track.original_format}</span>`);
-    if (track.sample_rate) parts.push(`<span class="badge">${Math.round(track.sample_rate / 1000)}K</span>`);
-    if (track.bit_depth) parts.push(`<span class="badge">${track.bit_depth}BIT</span>`);
-    if (typeof track.lufs_integrated === 'number') parts.push(`<span class="badge" title="Integrated loudness">${track.lufs_integrated.toFixed(1)}LU</span>`);
+    if (track.bit_depth) parts.push(`<span class="badge">${track.bit_depth}b</span>`);
+    if (typeof track.lufs_integrated === 'number') parts.push(`<span class="badge" title="Loudness">${track.lufs_integrated.toFixed(1)}LU</span>`);
     badges.innerHTML = parts.join('');
   }
+
+  // ─ Playing LED on ─
+  document.querySelector('#playing-led')?.classList.add('on');
 
   // Load waveform data
   if (track.waveform_data && Array.isArray(track.waveform_data)) {
@@ -875,6 +1077,8 @@ function bindEngineEvents(player) {
 
   engine.on('playstate', (playing) => {
     playBtn.textContent = playing ? '⏸' : '▶';
+    playBtn.classList.toggle('paused', !playing);
+    document.querySelector('#playing-led')?.classList.toggle('on', playing);
     store.set('isPlaying', playing);
     if (playing) startWaveformLoop(); else stopWaveformLoop();
   });
@@ -890,12 +1094,17 @@ function bindEngineEvents(player) {
   engine.on('ended', () => {
     const q = store.get('queue'), i = store.get('queueIndex');
     if (i < q.length - 1) playQueueItem(i + 1);
-    else { store.set('isPlaying', false); playBtn.textContent = '▶'; }
+    else {
+      store.set('isPlaying', false);
+      playBtn.textContent = '▶';
+      document.querySelector('#playing-led')?.classList.remove('on');
+    }
   });
 
   engine.on('buffering', (isBuffering) => {
     store.set('isBuffering', isBuffering);
     if (isBuffering) playBtn.textContent = '…';
+    else if (!engine.isPlaying) playBtn.textContent = '▶';
   });
 
   engine.on('error', ({ message }) => showToast(`Playback error: ${message}`, 'error'));

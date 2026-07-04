@@ -45,10 +45,20 @@ export function renderSidebar(container) {
         border-bottom: 1px solid var(--chrome-hi);
         margin: 6px 8px;
       }
+      .sidebar-titlebar {
+        background: linear-gradient(90deg, var(--playlist-active) 0%, var(--lcd) 100%);
+        padding: 3px 8px;
+        font-family: var(--pixel); font-size: 12px; letter-spacing: 3px;
+        color: #fff; text-transform: uppercase; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: space-between;
+      }
       .sidebar-output { padding: 6px 8px; }
       #dac-select { font-size: 12px; font-family: var(--pixel); padding: 3px 6px; height: auto; width: 100%; }
       #dac-status { font-size: 11px; font-family: var(--pixel); color: var(--lcd-dim); margin-top: 4px; padding: 0 2px; letter-spacing: 0.5px; }
     </style>
+    <div class="sidebar-titlebar">
+      <span>Library</span>
+    </div>
     <div class="sidebar-nav">
       <div class="sidebar-item" data-page="recents"><span class="icon">◷</span> Recents</div>
       <div class="sidebar-item" data-page="songs"><span class="icon">♪</span> Songs</div>
