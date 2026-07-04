@@ -131,11 +131,6 @@ export async function renderStatistics(container) {
         <div class="stat-sub">${stats.topArtist ? `${stats.topArtist.plays} plays` : 'Not enough data'}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Fav Genre</div>
-        <div class="stat-value" style="font-size:16px">${escHtml(stats.topGenre?.name || '—')}</div>
-        <div class="stat-sub">${stats.topGenre ? `${stats.topGenre.plays} plays` : 'Not enough data'}</div>
-      </div>
-      <div class="stat-card">
         <div class="stat-label">Unique Tracks</div>
         <div class="stat-value">${stats.uniqueTracks}</div>
         <div class="stat-sub">played at least once</div>
@@ -146,9 +141,6 @@ export async function renderStatistics(container) {
     <div class="stats-section-title">Artists</div>
     ${renderBars(stats.artistBreakdown)}` : ''}
 
-    ${stats.genreBreakdown.length > 0 ? `
-    <div class="stats-section-title">Genres</div>
-    ${renderBars(stats.genreBreakdown)}` : ''}
 
     ` : `<div class="no-data">NO LISTENING DATA YET<br><br>
     <span style="font-size:12px;color:var(--playlist-dim)">Play some tracks to see your stats.</span></div>`}

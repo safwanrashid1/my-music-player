@@ -191,8 +191,9 @@ export function renderPlayer(container) {
       }
 
       /* idle state */
-      #player-bar.idle #player-lcd { opacity: 0.45; }
-      #player-bar.idle .player-waveform-wrap { opacity: 0.3; }
+      /* idle: just slightly dimmed — does NOT block clicks or create an overlay */
+      #player-bar.idle #player-lcd { opacity: 0.75; }
+      #player-bar.idle .player-waveform-wrap { opacity: 0.55; }
 
       /* ── DJ Console Panel ── */
       #dj-panel {
@@ -416,6 +417,7 @@ export function renderPlayer(container) {
         <button class="eq-toggle-btn active" id="normalize-toggle-btn" title="Loudness normalization">NORM</button>
         <button class="eq-toggle-btn" id="eq-toggle-btn">EQ</button>
         <button class="eq-toggle-btn" id="dj-toggle-btn" style="color:#FF80B0">DJ</button>
+        <button class="eq-toggle-btn" id="expand-toggle-btn" title="Expand / collapse player">▲</button>
       </div>
     </div>
   `;
@@ -854,9 +856,22 @@ function setupNormalization(player) {
 // ─── Engine Events ─────────────────────────────────────────────────────────
 
 function bindEngineEvents(player) {
-  const playBtn  = player.querySelector('#btn-play');
-  const timeCur  = player.querySelector('#time-current');
-  const timeDur  = player.querySelector('#time-duration');
+  const playBtn    = player.querySelector('#btn-play');
+  const timeCur    = player.querySelector('#time-current');
+  const timeDur    = player.querySelector('#time-duration');
+  const expandBtn  = player.querySelector('#expand-toggle-btn');
+
+  expandBtn?.addEventListener('click', () => {
+    const app = document.getElementById('app');
+    const expanded = app?.classList.toggle('player-expanded');
+    expandBtn.textContent = expanded ? '▼' : '▲';
+    expandBtn.classList.toggle('active', !!expanded);
+    // close sub-panels when collapsing
+    if (!expanded) {
+      player.querySelector('#eq-panel')?.classList.remove('open');
+      player.querySelector('#dj-panel')?.classList.remove('open');
+    }
+  });
 
   engine.on('playstate', (playing) => {
     playBtn.textContent = playing ? '⏸' : '▶';

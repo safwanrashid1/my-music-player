@@ -1,44 +1,46 @@
-/* ── Winamp 2.x Classic skin system ───────────────────────────────────────── */
+/* ── Wavform — Winamp 2.x Classic + theme system ──────────────────────────── */
 :root {
-  /* Chrome — the "body" of the player */
+  /* Chrome — main body surfaces */
   --chrome:      #B4BCC8;
-  --chrome-hi:   #D8E0E8;   /* top / left face (light source hits here) */
-  --chrome-lo:   #6C7480;   /* bottom / right face (shadow) */
-  --chrome-dark: #8890A0;   /* recessed panel interior */
-  --chrome-edge: #40484C;   /* hard outer border */
+  --chrome-hi:   #D8E0E8;
+  --chrome-lo:   #6C7480;
+  --chrome-dark: #8890A0;
+  --chrome-edge: #40484C;
 
-  /* LCD / display areas ─ deep navy + bright teal */
+  /* LCD — muted by default; only #player overrides these to full brightness */
   --lcd:         #001828;
-  --lcd-text:    #00DCDC;
-  --lcd-dim:     #00606A;   /* "off" segment / inactive text */
-  --lcd-green:   #00CC44;   /* ● NOW PLAYING indicator */
-  --led-red:     #FF2828;
-  --led-amber:   #E09600;
+  --lcd-text:    #007A7A;   /* muted — bright only inside #player */
+  --lcd-dim:     #004048;
+  --lcd-green:   #006030;   /* muted */
+  --led-red:     #992020;   /* muted */
+  --led-amber:   #806000;
 
-  /* Playlist / content area */
+  /* Playlist / content */
   --playlist-bg:     #001828;
-  --playlist-hover:  #003C78;
-  --playlist-active: #0050A8;
-  --playlist-text:   #D0E0EC;
-  --playlist-dim:    #4878A0;
-  --playlist-dur:    #60A0C0;
+  --playlist-hover:  #002E5A;
+  --playlist-active: #003C7A;
+  --playlist-text:   #9BAFC0;  /* muted from #D0E0EC */
+  --playlist-dim:    #3A5870;
+  --playlist-dur:    #486880;
 
-  /* Text on chrome surfaces */
+  /* Text on chrome */
   --text:  #000010;
   --text2: #303840;
   --text3: #606870;
 
-  /* Legacy compat tokens used throughout components */
+  /* Accent — muted globally */
+  --accent:  #007878;
+  --accent2: #005858;
+  --amber:   #7A5800;
+  --red:     #882020;
+  --border:  rgba(0,8,16,0.25);
+  --border2: rgba(0,8,16,0.5);
+
+  /* Legacy */
   --bg:      var(--chrome);
   --bg2:     var(--chrome-dark);
   --bg3:     #78808C;
   --surface: #9098A8;
-  --accent:  #00C8C8;
-  --accent2: #009090;
-  --amber:   #D09000;
-  --red:     #CC2828;
-  --border:  rgba(0,8,16,0.25);
-  --border2: rgba(0,8,16,0.5);
 
   /* Fonts — VT323 is the pixel bitmap label font; JetBrains Mono for data */
   --pixel: 'VT323', 'Courier New', monospace;
@@ -67,6 +69,36 @@ html, body {
   image-rendering: pixelated;
 }
 
+/* ── Only the player section keeps full-brightness neons ──────────────────── */
+#player {
+  --lcd-text:  #00DCDC;
+  --lcd-dim:   #00606A;
+  --lcd-green: #00CC44;
+  --led-red:   #FF2828;
+  --led-amber: #E09600;
+  --accent:    #00C8C8;
+  --accent2:   #009090;
+}
+
+/* ── Dark Mode ──────────────────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --chrome:      #1C2028;
+  --chrome-hi:   #272D38;
+  --chrome-lo:   #0E1218;
+  --chrome-dark: #141820;
+  --chrome-edge: #080A10;
+  --text:        #BCC8D0;
+  --text2:       #607080;
+  --text3:       #3A4A58;
+  --bg:          #1C2028;
+  --bg2:         #141820;
+  --bg3:         #202830;
+  --surface:     #1A2030;
+  --border:      rgba(255,255,255,0.06);
+  --border2:     rgba(255,255,255,0.12);
+}
+
+/* ── App grid — supports expanded player via CSS variable ─────────────────── */
 #app {
   display: grid;
   grid-template-rows: var(--nav-h) 1fr var(--player-h);
@@ -76,6 +108,7 @@ html, body {
     "sidebar main"
     "player player";
   height: 100vh;
+  transition: grid-template-rows 0.25s ease;
 }
 
 /* ── Winamp bevel mixins (applied via box-shadow) ──────────────────────────── */
@@ -317,6 +350,17 @@ input[type=range].vertical::-webkit-slider-thumb { margin-top: 0; margin-left: -
 .pointer     { cursor: pointer; }
 .hidden      { display: none !important; }
 .mono        { font-family: var(--mono); }
+
+/* ── Expanded player (toggle via Options › View › Expand Player) ─────────────── */
+#app.player-expanded { --player-h: 55vh; }
+
+/* ── kbd shortcut display ──────────────────────────────────────────────────── */
+kbd {
+  font-family: var(--mono); font-size: 12px;
+  background: var(--chrome-dark); color: var(--text);
+  padding: 1px 6px;
+  box-shadow: inset 1px 1px 0 var(--chrome-hi), inset -1px -1px 0 var(--chrome-lo), 0 0 0 1px var(--chrome-edge);
+}
 
 /* ── Responsive (mobile sidebar off-canvas) ──────────────────────────────────── */
 #sidebar-backdrop { display: none; }
