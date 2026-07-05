@@ -98,15 +98,15 @@ html, body {
   --border2:     rgba(255,255,255,0.12);
 }
 
-/* ── App grid — supports expanded player via CSS variable ─────────────────── */
+/* ── App grid — three-column: sidebar / content / queue ───────────────────── */
 #app {
   display: grid;
   grid-template-rows: var(--nav-h) 1fr var(--player-h);
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 160px 1fr 220px;
   grid-template-areas:
-    "nav nav"
-    "sidebar main"
-    "player player";
+    "nav     nav  nav"
+    "sidebar main queue"
+    "player  player player";
   height: 100vh;
   transition: grid-template-rows 0.25s ease;
 }
@@ -364,12 +364,24 @@ kbd {
 
 /* ── Responsive (mobile sidebar off-canvas) ──────────────────────────────────── */
 #sidebar-backdrop { display: none; }
+@media (max-width: 960px) {
+  /* At tablet width, hide queue column and go back to 2-column */
+  #queue-panel { display: none; }
+  #app {
+    grid-template-columns: 160px 1fr;
+    grid-template-areas:
+      "nav nav"
+      "sidebar main"
+      "player player";
+  }
+}
+
 @media (max-width: 860px) {
   .nav-menu-btn { display: inline-flex; align-items: center; justify-content: center; }
   #app { grid-template-columns: 1fr; grid-template-areas: "nav" "main" "player"; }
   #sidebar {
     position: fixed; top: var(--nav-h); bottom: var(--player-h); left: 0;
-    width: 220px; transform: translateX(-100%);
+    width: 160px; transform: translateX(-100%);
     transition: transform 0.15s; z-index: 80;
   }
   #sidebar.open { transform: translateX(0); }
@@ -379,6 +391,4 @@ kbd {
     opacity: 0; pointer-events: none; transition: opacity 0.15s;
   }
   #sidebar-backdrop.open { opacity: 1; pointer-events: auto; }
-  .player-info { width: auto; max-width: 110px; }
-  .player-badges, .vol-wrap, #normalize-toggle-btn { display: none; }
 }

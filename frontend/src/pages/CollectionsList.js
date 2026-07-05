@@ -23,36 +23,33 @@ function metaLine(c) {
   return parts.join(' · ');
 }
 
-function buildCard(c) {
-  const color = colorFor(c.id);
-  const card = document.createElement('div');
-  card.className = 'coll-card';
-  card.dataset.id = c.id;
-  card.innerHTML = `
-    <div class="coll-art" style="background:${color}22;border-color:${color}44">
-      <div class="coll-art-initial" style="color:${color}">${escHtml(c.name.charAt(0).toUpperCase())}</div>
-      <div class="coll-art-overlay">
-        <div class="coll-play-btn" data-play-btn>▶</div>
-      </div>
+// Flat Winamp-playlist-style row — same aesthetic as the Songs page
+function buildRow(c, index) {
+  const row = document.createElement('div');
+  row.className = 'coll-row';
+  row.dataset.id = c.id;
+  row.innerHTML = `
+    <span class="coll-row-num">${index + 1}.</span>
+    <div class="coll-row-info">
+      <span class="coll-row-name">${escHtml(c.name)}</span>
+      <span class="coll-row-sep"> · </span>
+      <span class="coll-row-meta">${escHtml(metaLine(c))}</span>
     </div>
-    <div class="coll-body">
-      <div class="coll-name truncate">${escHtml(c.name)}</div>
-      <div class="coll-meta truncate">${escHtml(metaLine(c))}</div>
-    </div>
+    <button class="coll-row-play" data-play-btn title="Play all">▶</button>
   `;
-  card.addEventListener('click', (e) => {
+  row.addEventListener('click', (e) => {
     if (e.target.closest('[data-play-btn]')) return;
     store.set('pageData', { collectionId: c.id, type: c.type });
     store.set('page', 'collection');
   });
-  card.querySelector('[data-play-btn]').addEventListener('click', async (e) => {
+  row.querySelector('[data-play-btn]').addEventListener('click', async (e) => {
     e.stopPropagation();
     try {
       const full = await api.getCollection(c.id);
       playCollection(full.tracks);
-    } catch { /* toast could go here */ }
+    } catch {}
   });
-  return card;
+  return row;
 }
 
 export function renderCollectionsPage(container, type) {
@@ -61,50 +58,81 @@ export function renderCollectionsPage(container, type) {
 
   container.innerHTML = `
     <style>
-      #coll-wrap { padding: 24px; overflow-y: auto; height: 100%; }
-      .coll-page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-      #coll-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
-      .coll-card {
-        background: var(--bg2); border: 0.5px solid var(--border);
-        border-radius: var(--r2); overflow: hidden; cursor: pointer;
-        transition: border-color 0.15s, transform 0.12s;
+      /* Winamp playlist-style — dark navy, flat rows, no cards */
+      #coll-wrap {
+        height: 100%; display: flex; flex-direction: column;
+        background: var(--playlist-bg);
       }
-      .coll-card:hover { border-color: var(--border2); transform: translateY(-1px); }
-      .coll-art {
-        height: 120px; border-bottom: 0.5px solid var(--border);
-        display: flex; align-items: center; justify-content: center;
-        position: relative; overflow: hidden;
-      }
-      .coll-art-initial { font-size: 52px; font-weight: 700; font-family: var(--mono); opacity: 0.9; }
-      .coll-art-overlay {
-        position: absolute; inset: 0; background: rgba(8,11,18,0.5);
-        display: flex; align-items: center; justify-content: center;
-        opacity: 0; transition: opacity 0.15s;
-      }
-      .coll-card:hover .coll-art-overlay { opacity: 1; }
-      .coll-play-btn {
-        width: 40px; height: 40px; background: var(--accent); color: var(--bg);
-        border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        font-size: 16px; font-weight: bold;
-      }
-      .coll-body { padding: 10px 12px; }
-      .coll-name { font-size: 13px; font-weight: 500; }
-      .coll-meta { font-size: 11px; color: var(--text2); margin-top: 3px; }
 
-      /* Create form */
+      /* Title / action bar (gradient titlebar like other Winamp windows) */
+      .coll-titlebar {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 4px 8px; flex-shrink: 0;
+        background: linear-gradient(90deg, var(--playlist-active) 0%, var(--lcd) 100%);
+      }
+      .coll-titlebar h2 {
+        font-family: var(--pixel); font-size: 13px; letter-spacing: 2px;
+        color: #fff; text-transform: uppercase;
+      }
+
+      /* Slide-in create form */
       #coll-create-form {
-        background: var(--bg2); border: 0.5px solid var(--border2);
-        border-radius: var(--r2); padding: 18px; margin-bottom: 20px; display: none;
+        padding: 6px 8px; flex-shrink: 0; display: none;
+        background: var(--chrome);
+        box-shadow: inset 0 -1px 0 var(--chrome-lo);
       }
       #coll-create-form.open { display: block; }
-      #coll-create-form .form-row { display: flex; gap: 10px; }
-      #coll-create-form .form-group { flex: 1; }
+      #coll-create-form .form-row { display: flex; gap: 6px; }
+      #coll-create-form .form-group { flex: 1; margin-bottom: 6px; }
+      #coll-create-form label { font-family: var(--pixel); font-size: 11px; color: var(--text3); letter-spacing: 1px; display: block; margin-bottom: 2px; text-transform: uppercase; }
 
-      .empty-state { grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--text2); }
-      .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+      /* List container */
+      #coll-grid { flex: 1; overflow-y: auto; }
+
+      /* Flat Winamp-style rows */
+      .coll-row {
+        display: flex; align-items: center; gap: 8px;
+        padding: 4px 8px; cursor: pointer;
+        color: var(--playlist-text);
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+      }
+      .coll-row:hover { background: var(--playlist-hover); }
+      .coll-row-num {
+        font-family: var(--mono); font-size: 11px;
+        color: var(--playlist-dim); width: 22px; text-align: right; flex-shrink: 0;
+      }
+      .coll-row-info { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 0; overflow: hidden; }
+      .coll-row-name {
+        font-family: var(--mono); font-size: 13px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; max-width: 60%;
+      }
+      .coll-row-sep { color: var(--playlist-dim); font-family: var(--mono); font-size: 11px; flex-shrink: 0; }
+      .coll-row-meta {
+        font-family: var(--mono); font-size: 11px; color: var(--playlist-dim);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .coll-row-play {
+        font-family: var(--pixel); font-size: 12px; padding: 2px 6px;
+        flex-shrink: 0; cursor: pointer; opacity: 0;
+        background: var(--chrome); color: var(--text);
+        box-shadow: inset 1px 1px 0 var(--chrome-hi), inset -1px -1px 0 var(--chrome-lo), 0 0 0 1px var(--chrome-edge);
+      }
+      .coll-row:hover .coll-row-play { opacity: 1; }
+      .coll-row-play:active { box-shadow: inset 1px 1px 0 var(--chrome-lo), inset -1px -1px 0 var(--chrome-hi), 0 0 0 1px var(--chrome-edge); }
+
+      /* Bottom load-more strip */
+      #coll-load-more { padding: 4px 8px; flex-shrink: 0; background: var(--playlist-bg); }
+
+      /* Empty state */
+      .empty-state {
+        flex: 1; display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        padding: 40px; color: var(--playlist-dim);
+        font-family: var(--pixel); font-size: 14px; letter-spacing: 2px; text-align: center;
+      }
     </style>
     <div id="coll-wrap">
-      <div class="coll-page-header">
+      <div class="coll-titlebar">
         <h2>${label}</h2>
         <button class="btn btn-primary btn-sm" id="coll-new-btn">+ ${newLabel}</button>
       </div>
@@ -114,22 +142,22 @@ export function renderCollectionsPage(container, type) {
           <div class="form-row">
             <div class="form-group"><label>Title</label><input type="text" id="cf-name" placeholder="Album title" /></div>
             <div class="form-group"><label>Artist</label><input type="text" id="cf-artist" placeholder="Artist name" /></div>
-            <div class="form-group" style="max-width:90px"><label>Year</label><input type="number" id="cf-year" placeholder="2024" min="1000" max="9999" /></div>
+            <div class="form-group" style="max-width:80px"><label>Year</label><input type="number" id="cf-year" placeholder="2024" min="1000" max="9999" /></div>
           </div>` : `
           <div class="form-row">
             <div class="form-group"><label>Name</label><input type="text" id="cf-name" placeholder="Playlist name" /></div>
-            <div class="form-group"><label>Description</label><input type="text" id="cf-desc" placeholder="Optional description" /></div>
+            <div class="form-group"><label>Description</label><input type="text" id="cf-desc" placeholder="Optional" /></div>
           </div>`}
-        <div style="display:flex;gap:8px;margin-top:12px">
+        <div style="display:flex;gap:6px;align-items:center">
           <button class="btn btn-primary btn-sm" id="cf-submit">Create</button>
           <button class="btn btn-ghost btn-sm" id="cf-cancel">Cancel</button>
-          <span id="cf-err" style="font-size:12px;color:var(--red);align-self:center"></span>
+          <span id="cf-err" style="font-size:12px;color:var(--red)"></span>
         </div>
       </div>
 
       <div id="coll-grid"></div>
-      <div id="coll-load-more" style="text-align:center;padding:20px;display:none">
-        <button class="btn btn-ghost btn-sm" id="coll-more-btn">Load more</button>
+      <div id="coll-load-more" style="display:none">
+        <button class="btn btn-sm" id="coll-more-btn">Load more…</button>
       </div>
     </div>
   `;
@@ -159,8 +187,8 @@ export function renderCollectionsPage(container, type) {
     loadCollections(container, grid, type, page, true);
   });
 
-  wrap.addEventListener('scroll', () => {
-    if (!exhausted && wrap.scrollTop + wrap.clientHeight > wrap.scrollHeight - 200) {
+  grid.addEventListener('scroll', () => {
+    if (!exhausted && grid.scrollTop + grid.clientHeight > grid.scrollHeight - 200) {
       page++;
       loadCollections(container, grid, type, page, true);
     }
@@ -188,7 +216,8 @@ async function loadCollections(container, grid, type, page, append) {
           <p>No ${type}s yet. Create your first one above.</p>
         </div>`;
     } else {
-      items.forEach(c => grid.appendChild(buildCard(c)));
+      const startIdx = append ? grid.querySelectorAll('.coll-row').length : 0;
+      items.forEach((c, i) => grid.appendChild(buildRow(c, startIdx + i)));
       const moreBtn = container.querySelector('#coll-load-more');
       if (items.length < 24) {
         if (moreBtn) moreBtn.style.display = 'none';

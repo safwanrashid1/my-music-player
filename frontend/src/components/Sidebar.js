@@ -9,26 +9,26 @@ export function renderSidebar(container) {
       #sidebar {
         grid-area: sidebar;
         display: flex; flex-direction: column;
-        padding: 6px 0;
+        padding: 0;
         overflow-y: auto;
         background: var(--chrome);
         box-shadow:
           inset -1px 0 0 var(--chrome-lo),
           inset 1px 0 0 var(--chrome-hi);
       }
-      .sidebar-nav { padding: 4px 0; }
+      .sidebar-nav { padding: 2px 0; }
       .sidebar-out-label {
         font-size: 10px; font-family: var(--pixel);
-        color: var(--text3); letter-spacing: 2px;
-        text-transform: uppercase; padding: 4px 10px 2px;
+        color: var(--text3); letter-spacing: 1.5px;
+        text-transform: uppercase; padding: 4px 8px 2px;
       }
       .sidebar-item {
-        display: flex; align-items: center; gap: 8px;
-        padding: 4px 10px;
+        display: flex; align-items: center; gap: 6px;
+        padding: 3px 8px;
         color: var(--text);
-        font-family: var(--pixel); font-size: 15px;
+        font-family: var(--pixel); font-size: 14px;
         cursor: pointer;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.5px; white-space: nowrap; overflow: hidden;
       }
       .sidebar-item:hover {
         background: var(--playlist-hover);
@@ -38,12 +38,12 @@ export function renderSidebar(container) {
         background: var(--playlist-active);
         color: #FFFFFF;
       }
-      .sidebar-item .icon { width: 18px; text-align: center; font-size: 14px; }
+      .sidebar-item .icon { width: 16px; text-align: center; font-size: 13px; flex-shrink: 0; }
       .sidebar-divider {
         height: 0;
         border-top: 1px solid var(--chrome-lo);
         border-bottom: 1px solid var(--chrome-hi);
-        margin: 6px 8px;
+        margin: 4px 6px;
       }
       .sidebar-titlebar {
         background: linear-gradient(90deg, var(--playlist-active) 0%, var(--lcd) 100%);

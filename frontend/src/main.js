@@ -3,6 +3,7 @@ import { store } from './stores/app.js';
 import { renderNav } from './components/Nav.js';
 import { renderSidebar } from './components/Sidebar.js';
 import { renderPlayer } from './components/Player.js';
+import { renderQueue } from './components/Queue.js';
 import { renderDropOverlay } from './components/DropOverlay.js';
 import { renderFeed } from './pages/Feed.js';
 import { renderUpload } from './pages/Upload.js';
@@ -26,6 +27,11 @@ const main = document.createElement('main');
 main.id = 'main-content';
 main.style.cssText = 'grid-area:main;overflow:hidden;height:100%;display:flex;flex-direction:column;background:var(--bg)';
 app.appendChild(main);
+
+const queueEl = document.createElement('aside');
+queueEl.id = 'queue-panel';
+app.appendChild(queueEl);
+renderQueue(queueEl);
 
 renderPlayer(app);
 
